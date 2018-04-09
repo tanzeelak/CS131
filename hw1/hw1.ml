@@ -31,3 +31,22 @@ let set_union_old a b =
 
 let set_union a b = 
 a@b;;
+
+
+let rec set_intersection l1 l2 =
+   let rec contains i l = match l with
+     | [] -> false
+   | h::t -> if i = h then true else contains i t
+   in
+  match l1 with
+  | [] -> []
+  | h::t -> if (contains h l2) then h::(set_intersection t l2) else set_intersection t l2;;
+
+let set_diff_old a b =
+  filter(fun x -> not (mem x (set_intersection a b))) (set_union a b);;
+
+let set_diff a b =
+  let func1 x =
+  not (mem x (set_intersection a b))
+  in
+  filter func1 (set_union a b);;

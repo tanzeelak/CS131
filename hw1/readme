@@ -3,3 +3,9 @@ https://stackoverflow.com/questions/2756489/sorting-a-list-in-ocaml
 
 remove dup func
 https://stackoverflow.com/questions/8622979/how-do-you-eliminate-consecutive-duplicates-of-list-elements
+
+intersection
+https://github.com/benjaminTaubenblatt/Ocaml-Intersection/blob/master/intersection.ml
+
+diff
+https://stackoverflow.com/questions/22132458/library-function-to-find-difference-between-two-lists-ocaml?rq=1
