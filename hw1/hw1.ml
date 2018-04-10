@@ -12,7 +12,7 @@ let equal_sets a b =
 
 let rec sort a =
 match a with
-[] -> []
+| [] -> []
    | head :: tail -> insert head (sort tail)
  and insert elt a =
    match a with
@@ -30,7 +30,7 @@ let set_union_old a b =
   uniq(sort(a@b));;
 
 let set_union a b = 
-a@b;;
+a @ b;;
 
 
 let rec set_intersection l1 l2 =
@@ -42,6 +42,22 @@ let rec set_intersection l1 l2 =
   | [] -> []
   | h::t -> if (contains h l2) then h::(set_intersection t l2) else set_intersection t l2;;
 
+
+let set_intersection_old a b =
+let check x =
+not (mem x b)
+in
+filter check a ;;
+
+(* better one *)
+let rec set_intersection a b =
+match a with
+| [] -> []
+| h::t ->
+if (mem h b) then h::(set_intersection t b)
+else (set_intersection t b)
+
+
 let set_diff_old a b =
   filter(fun x -> not (mem x (set_intersection a b))) (set_union a b);;
 
@@ -51,6 +67,17 @@ let set_diff a b =
   in
   filter func1 (set_union a b);;
 
+let set_diff a b =
+let func1 x =
+not (mem x (a
+
+(*n
+let set_diff a b =
+l func1 x =
+not (mem x (set_intersection a b))
+in
+filter func1 (set_union a b)
+*)
 
 (* compare first input x to f f f f f x until equal by eq func must change *)
 let rec computed_fixed_point eq f x =
