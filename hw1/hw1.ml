@@ -67,9 +67,6 @@ let set_diff a b =
   in
   filter func1 (set_union a b);;
 
-let set_diff a b =
-let func1 x =
-not (mem x (a
 
 (*n
 let set_diff a b =
@@ -112,3 +109,30 @@ else num :: rle_decode ((len-1,num)::t);;
 type ('nonterminal, 'terminal) symbol = 
 | N of 'nonterminal
 | T of 'terminal ;;
+
+
+let is_terminal symbol =
+match symbol with
+| T _ -> true
+| N _ -> false;;
+
+let rec is_rule_terminal rhs =
+match rhs with
+| [] -> true
+| h::t ->
+if is_terminal h then
+is_rule_terminal t
+else
+false;;
+
+let rec find_terminal_rules rules =
+match rules with
+| [] -> []
+| h::t ->
+if is_rule_terminal (snd h) then 
+(snd h) :: find_terminal_rules t
+else 
+[];;
+
+let filter_blind_alleys g =
+find_terminal_rules (snd g)
