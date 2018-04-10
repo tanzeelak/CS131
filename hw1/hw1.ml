@@ -52,13 +52,13 @@ let set_diff a b =
   filter func1 (set_union a b);;
 
 
-* compare first input x to f f f f f x until equal by eq func must change * 
+(* compare first input x to f f f f f x until equal by eq func must change *)
 let rec computed_fixed_point eq f x =
   if eq (f x) x 
   then x
   else computed_fixed_point eq f (f x);;
 
-* return the first repeated element *
+(* return the first repeated element *)
 let rec computed_periodic_point eq f p x = 
 match p with
 | 0 -> x
@@ -67,22 +67,12 @@ then x
 else
 computed_periodic_point eq f p (f x);;
 
-* want to return int apparently *
+(* want to return int apparently *)
 let rec while_away s p x =
   if p x then
   x :: (while_away s p (s x))  
   else
   [];;
-
-let rec rle_decode lp = 
-match lp with
-[] -> []
-| (len, num)::t -> if len = 0 then rle_decode(t) else val::rle_decode ((len-1,val)::t);;
-
-let rec rle_decode lp = match lp with
-[] -> []
-    | (num, value)::t -> if num = 0 then rle_decode(t) else value::rle_decode ((num-1,value)::t);;    
-val rle_de
 
 
 let rec rle_decode lp = 
