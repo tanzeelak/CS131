@@ -6,6 +6,7 @@ https://stackoverflow.com/questions/8622979/how-do-you-eliminate-consecutive-dup
 
 intersection
 https://github.com/benjaminTaubenblatt/Ocaml-Intersection/blob/master/intersection.ml
+https://github.com/Duta/ocaml/blob/master/intersect.ml
 
 diff
 https://stackoverflow.com/questions/22132458/library-function-to-find-difference-between-two-lists-ocaml?rq=1
