@@ -110,11 +110,39 @@ type ('nonterminal, 'terminal) symbol =
 | T of 'terminal ;;
 
 
+type awksub_nonterminals =
+  | Expr | Lvalue | Incrop | Binop | Num
+
+let awksub_rules =
+   [Expr, [T"("; N Expr; T")"];
+    Expr, [N Num];
+    Expr, [N Expr; N Binop; N Expr];
+    Expr, [N Lvalue];
+    Expr, [N Incrop; N Lvalue];
+    Expr, [N Lvalue; N Incrop];
+    Lvalue, [T"$"; N Expr];
+    Incrop, [T"++"];
+    Incrop, [T"--"];
+    Binop, [T"+"];
+    Binop, [T"-"];
+    Num, [T"0"];
+    Num, [T"1"];
+    Num, [T"2"];
+    Num, [T"3"];
+    Num, [T"4"];
+    Num, [T"5"];
+    Num, [T"6"];
+    Num, [T"7"];
+    Num, [T"8"];
+    Num, [T"9"]]
+
+(* check if N "a" is_terminal *)
 let is_terminal symbol =
 match symbol with
 | T _ -> true
 | N _ -> false;;
 
+(* iterate through [N Expr; N Binop; N Expr] and check if all elements are terminal *) 
 let rec is_rule_terminal rhs =
 match rhs with
 | [] -> true
@@ -124,14 +152,61 @@ is_rule_terminal t
 else
 false;;
 
+(* iterate through each rule in grammar Expr, [N Expr; N Binop; N Expr]; and add to list *)
 let rec find_terminal_rhs rules =
 match rules with
 | [] -> []
 | h::t ->
 if is_rule_terminal (snd h) then 
-(fst h) :: find_terminal_rhs t
+(N (fst h)) :: find_terminal_rhs t
 else 
 find_terminal_rhs t;;
- 
+
+(* compare list elements to see if in subset *)
+
+let rec compare_elements_to_terminal_list rhs currList =
+match rhs with
+| [] -> true
+| h::t -> 
+if mem h currList then
+compare_elements_to_terminal_list t currList
+else 
+false;;
+
+
+(* iterate through the remaining rules and check if rhs includes an element in the list *)
+(*
+let rec compare_rhs_terminal_rules rules currList =
+match rules with
+| [] -> []
+| h::t ->
+if compare_elements_to_terminal_list (snd h) currList then
+currList :: compare_rhs_terminal_rules t
+else
+compare_rhs_terminal_rules t;;
+*)
+
 let filter_blind_alleys g =
-uniq(find_terminal_rhs (snd g));;
+uniq(find_terminal_rhs (snd g))
+(* check g rhs with list to decide boolean *)
+;;
+
+
+
+filter_blind_alleys (Expr,
+		     [Expr, [N Num];
+		     Expr, [N Lvalue];
+		     Expr, [N Expr; N Lvalue];
+		     Expr, [N Lvalue; N Expr];
+		     Expr, [N Expr; N Binop; N Expr];
+		     Lvalue, [N Lvalue; N Expr];
+		     Lvalue, [N Expr; N Lvalue];
+		     Lvalue, [N Incrop; N Lvalue];
+		     Lvalue, [N Lvalue; N Incrop];
+		     Incrop, [T"++"]; Incrop, [T"--"];
+		     Binop, [T"+"]; Binop, [T"-"];
+		     Num, [T"0"]; Num, [T"1"]; Num, [T"2"]; Num, [T"3"]; Num, [T"4"];
+		            Num, [T"5"]; Num, [T"6"]; Num, [T"7"]; Num, [T"8"]; Num, [T"9"]]);;
+(* returns [N Incrop; N Binop; N Num] *)
+
+compare_elements_to_terminal_list [N Incrop; N Expr] [N Incrop; N Binop; N Num];;
