@@ -98,7 +98,6 @@ let rec while_away s p x =
   else
   [];;
 
-
 let rec rle_decode lp = 
 match lp with
 | [] -> []
@@ -125,14 +124,14 @@ is_rule_terminal t
 else
 false;;
 
-let rec find_terminal_rules rules =
+let rec find_terminal_rhs rules =
 match rules with
 | [] -> []
 | h::t ->
 if is_rule_terminal (snd h) then 
-(snd h) :: find_terminal_rules t
+(fst h) :: find_terminal_rhs t
 else 
-[];;
-
+find_terminal_rhs t;;
+ 
 let filter_blind_alleys g =
-find_terminal_rules (snd g)
+uniq(find_terminal_rhs (snd g));;
