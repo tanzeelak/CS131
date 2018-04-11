@@ -184,9 +184,12 @@ else
 compare_rhs_terminal_rules t currList;;
 
 let filter_blind_alleys g =
-uniq(find_terminal_rhs (snd g))
-(* check g rhs with list to decide boolean *)
+compare_rhs_terminal_rules (snd g) (find_terminal_rhs (snd g))
+(* compare_rhs_terminal_rules (snd g) (find_terminal_rhs (snd g))
+ check g rhs with list to decide boolean *)
 ;;
+
+
 
 filter_blind_alleys (Expr,
 		     [Expr, [N Num];
