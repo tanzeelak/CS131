@@ -162,8 +162,7 @@ if is_rule_terminal (snd h) then
 else 
 find_terminal_rhs t;;
 
-(* compare list elements to see if in subset *)
-
+(* compare list elements to see if in currList *)
 let rec compare_elements_to_terminal_list rhs currList =
 match rhs with
 | [] -> true
@@ -173,25 +172,21 @@ compare_elements_to_terminal_list t currList
 else 
 false;;
 
-
-(* iterate through the remaining rules and check if rhs includes an element in the list *)
-(*
+(* iterate through the remaining rules and check if rhs of grammar includes an element in the list of t
+and then add the lhs to the list of t *)
 let rec compare_rhs_terminal_rules rules currList =
 match rules with
 | [] -> []
 | h::t ->
 if compare_elements_to_terminal_list (snd h) currList then
-currList :: compare_rhs_terminal_rules t
+(fst h) :: compare_rhs_terminal_rules t currList
 else
-compare_rhs_terminal_rules t;;
-*)
+compare_rhs_terminal_rules t currList;;
 
 let filter_blind_alleys g =
 uniq(find_terminal_rhs (snd g))
 (* check g rhs with list to decide boolean *)
 ;;
-
-
 
 filter_blind_alleys (Expr,
 		     [Expr, [N Num];
@@ -210,3 +205,25 @@ filter_blind_alleys (Expr,
 (* returns [N Incrop; N Binop; N Num] *)
 
 compare_elements_to_terminal_list [N Incrop; N Expr] [N Incrop; N Binop; N Num];;
+
+compare_rhs_terminal_rules [Expr, [T"("; N Expr; T")"];
+    Expr, [N Num];
+    Expr, [N Expr; N Binop; N Expr];
+    Expr, [N Lvalue];
+    Expr, [N Incrop; N Lvalue];
+    Expr, [N Lvalue; N Incrop];
+    Lvalue, [T"$"; N Expr];
+    Incrop, [T"++"];
+    Incrop, [T"--"];
+    Binop, [T"+"];
+    Binop, [T"-"];
+    Num, [T"0"];
+    Num, [T"1"];
+    Num, [T"2"];
+    Num, [T"3"];
+    Num, [T"4"];
+    Num, [T"5"];
+    Num, [T"6"];
+    Num, [T"7"];
+    Num, [T"8"];
+    Num, [T"9"]] [N Incrop; N Binop; N Num];;
