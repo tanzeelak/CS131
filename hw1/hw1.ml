@@ -140,7 +140,7 @@ let awksub_rules =
 let is_terminal symbol =
 match symbol with
 | T _ -> true
-| N _ -> false;;
+| N rhsElem -> false;;
 
 (* iterate through [N Expr; N Binop; N Expr] and check if all elements are terminal *) 
 let rec is_rule_terminal rhs =
@@ -174,23 +174,78 @@ false;;
 
 (* iterate through the remaining rules and check if rhs of grammar includes an element in the list of t
 and then add the lhs to the list of t *)
-let rec compare_rhs_terminal_rules rules currList =
+(*
+
+let rec compare_rhs_terminal_rules rules:(('a * 'b list) list) currList =
 match rules with
-| [] -> []
+| [] -> currList
 | h::t ->
 if compare_elements_to_terminal_list (snd h) currList then
 (fst h) :: compare_rhs_terminal_rules t currList
 else
 compare_rhs_terminal_rules t currList;;
 
+*)
+
+(*
 let filter_blind_alleys g =
-compare_rhs_terminal_rules (snd g) (find_terminal_rhs (snd g))
-(* compare_rhs_terminal_rules (snd g) (find_terminal_rhs (snd g))
- check g rhs with list to decide boolean *)
+let firstRules = find_terminal_rhs (snd g) in
+firstRules @ (compare_rhs_terminal_rules (snd g) (find_terminal_rhs firstRules))
+ compare_rhs_terminal_rules (snd g) (find_terminal_rhs (snd g))
+ check g rhs with list to decide boolean  *)
+ 
+
+(* ------------- new fun ----------- *)
+
+(* check if N "a" is_terminal *)
+let is_term_list currList =
+function
+| T _ -> true
+| N rhsElem -> subset [rhsElem] currList ;;
+
+(* iterate through [N Expr; N Binop; N Expr] and check if all elements are terminal *)
+let rec is_rule_term rhs currList =
+match rhs with
+| [] -> true
+| rhsElem::t ->
+if is_term_list currList rhsElem 
+then
+is_rule_term t currList
+else
+false;;
+
+let rec compare_rhs_term_rules rules currList =
+match rules with
+| [] -> currList
+| rule::t ->
+if (is_rule_term (snd rule) currList) && not (subset [(fst rule)] currList) 
+then
+compare_rhs_term_rules t ((fst rule) :: currList)
+else
+compare_rhs_term_rules t currList;;
+
+let get_filtered_rules (rules, currList) =
+(rules, compare_rhs_term_rules rules currList)
+;;
+
+let equal_rules a b =
+equal_sets (snd a) (snd b)
 ;;
 
 
+let get_good_symbols rules =
+snd (computed_fixed_point equal_rules get_filtered_rules (rules, []))
+;;
 
+
+let filter_blind_alleys g = match g with
+| (start, rules) -> (start, compare_rhs_term_rules rules (get_good_symbols rules))
+;;
+
+
+(* -------------- old fun ---------- *)
+
+(*
 filter_blind_alleys (Expr,
 		     [Expr, [N Num];
 		     Expr, [N Lvalue];
@@ -205,10 +260,13 @@ filter_blind_alleys (Expr,
 		     Binop, [T"+"]; Binop, [T"-"];
 		     Num, [T"0"]; Num, [T"1"]; Num, [T"2"]; Num, [T"3"]; Num, [T"4"];
 		            Num, [T"5"]; Num, [T"6"]; Num, [T"7"]; Num, [T"8"]; Num, [T"9"]]);;
-(* returns [N Incrop; N Binop; N Num] *)
+returns [N Incrop; N Binop; N Num] *)
 
+(*
 compare_elements_to_terminal_list [N Incrop; N Expr] [N Incrop; N Binop; N Num];;
+*)
 
+(*
 compare_rhs_terminal_rules [Expr, [T"("; N Expr; T")"];
     Expr, [N Num];
     Expr, [N Expr; N Binop; N Expr];
@@ -229,4 +287,7 @@ compare_rhs_terminal_rules [Expr, [T"("; N Expr; T")"];
     Num, [T"6"];
     Num, [T"7"];
     Num, [T"8"];
-    Num, [T"9"]] [N Incrop; N Binop; N Num];;
+    Num, [T"9"]]
+
+ [N Incrop; N Binop; N Num];;
+*)
