@@ -114,6 +114,14 @@ convert_grammar (Expr,
 ;;
 
 
+let accept_all derivation string = Some (derivation, string)
+;;
+
+let accept_empty_suffix derivation = function
+   | [] -> Some (derivation, [])
+      | _ -> None
+;;
+
 let awkish_grammar =
   (Expr,
    function
@@ -164,86 +172,48 @@ return None
 
 *)
 
-(*
-let rec depMatcher start rules match_start_rules accept deriv frag =
 
-  let rec match_elem rules rule accept deriv frag =
-  match rule with
-  | [] -> accept deriv frag
-  | _ ->
-    match frag with
-    | [] -> None
-    | hPrefix::restPrefix ->
-      match rule with
-      | [] -> None
-      | (T term)::rhs ->
-        if hPrefix = term then
-        match_elem rules rhs accept deriv restPrefix
-        else
-        None
-      | (N nterm)::rhs ->
-      matcher nterm rules (rules nterm) (match_elem rules rhs accept) deriv frag
-  in
 
-  let rec matcher start rules match_start_rules accept deriv frag =
-  match match_start_rules with
+
+let rec matcher start rules curr_nt accept derivList frag =
+match curr_nt with
+| [] -> None
+| headRule::restRules ->
+  match (match_element rules headRule accept (derivList@[start, headRule]) frag) with
+  | None -> matcher start rules restRules accept derivList frag
+  | Some res -> Some res
+
+and 
+
+match_element rules rule accept derivList frag =
+match rule with
+| [] -> accept derivList frag
+| _ ->
+  match frag with
   | [] -> None
-  | hRule::restRules ->
-    match (match_elem rules hRule accept (deriv@[start, hrule]) frag) with
-    | None -> matcher start rules restRules accept deriv frag
-    | Some res -> Some res
-  in
-
-matcher start rules match_start_rules accept deriv frag
+  | curr_prefix::r_frag ->
+    match rule with
+    | [] -> None
+    | (T term)::rhs ->
+      if curr_prefix = term then
+      (match_element rules rhs accept derivList r_frag)
+      else None
+    | (N nterm)::rhs ->
+      (matcher nterm rules (rules nterm) (match_element rules rhs accept) derivList frag)
 ;;
 
-*)
-
-(*
-let parse_prefix g =
-  let start = (fst g) in
-  let rules = (snd g) in
-  let match_start_rules = (snd g) (fst g)
-depMatcher start rules match_start_rules accept [] frag
-;;
-
-*)
-
-
-
-let parse_prefix gram accept frag =
-
-  let rec matcher start rules matching_start_rules accept derivList frag =
-  match matching_start_rules with
-  | [] -> None
-  | headRule::restRules ->
-    match (match_element rules headRule accept (derivList@[start, headRule]) frag) with
-    | None -> matcher start rules restRules accept derivList frag
-    | Some res -> Some res
-
-  and 
-
-  match_element rules rule accept derivList frag =
-  match rule with
-  | [] -> accept derivList frag
-  | _ ->
-    match frag with
-    | [] -> None
-    | curr_prefix::r_frag ->
-      match rule with
-      | [] -> None
-      | (T term)::rhs ->
-        if curr_prefix = term then
-        (match_element rules rhs accept derivList r_frag)
-        else None
-      | (N nterm)::rhs ->
-        (matcher nterm rules (rules nterm) (match_element rules rhs accept) derivList frag)
-  in 
-
-
+let parse_prefix gram accept frag = 
   let start = (fst gram) in
   let rules = (snd gram) in
-  let match_start_rules = (snd gram) (fst gram) in
-
-matcher start rules match_start_rules accept [] frag
+  let curr_nt = produce_nt (snd gram) (fst gram) in
+matcher start rules curr_nt accept [] frag
 ;;
+
+let test0 =
+((parse_prefix awkish_grammar accept_all ["ouch"]) = None)
+;;
+
+let test1 =
+((parse_prefix awkish_grammar accept_all ["9"])
+ = Some ([(Expr, [N Term]); (Term, [N Num]); (Num, [T "9"])], []))
+;;	  
