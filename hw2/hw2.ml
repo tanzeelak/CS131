@@ -213,61 +213,32 @@ depMatcher start rules match_start_rules accept [] frag
 
 let parse_prefix gram accept frag =
 
-(*
-  let rec match_element rules rule accept derivation frag = 
-  match rule with
-  | [] -> accept derivation frag
-  | _ -> 
-    match frag with
-    | [] -> None
-    | curr_prefix::r_frag -> 
-      match rule with
-      | [] -> None
-      | (T term)::rhs -> 
-        if curr_prefix = term then 
-        (match_element rules rhs accept derivation r_frag) 
-        else None
-      | (N nterm)::rhs ->
-        (matcher nterm rules (rules nterm) (match_element rules rhs accept) derivation frag)
-
-
-  and matcher start rules matching_start_rules accept derivation frag =
+  let rec matcher start rules matching_start_rules accept derivList frag =
   match matching_start_rules with
   | [] -> None
-  | top_rule::other_rules ->
-    match (match_element rules top_rule accept (derivation@[start, top_rule]) frag) with
-    | None -> matcher start rules other_rules accept derivation frag
-    | Some res -> Some res
-  in
-*)
-
-
-let rec matcher start rules matching_start_rules accept derivation frag =
-  match matching_start_rules with
-  | [] -> None
-| top_rule::other_rules ->
-    match (match_element rules top_rule accept (derivation@[start, top_rule]) frag) with
-    | None -> matcher start rules other_rules accept derivation frag
+  | headRule::restRules ->
+    match (match_element rules headRule accept (derivList@[start, headRule]) frag) with
+    | None -> matcher start rules restRules accept derivList frag
     | Some res -> Some res
 
-and 
+  and 
 
-match_element rules rule accept derivation frag =
+  match_element rules rule accept derivList frag =
   match rule with
-  | [] -> accept derivation frag
-| _ ->
+  | [] -> accept derivList frag
+  | _ ->
     match frag with
     | [] -> None
-| curr_prefix::r_frag ->
+    | curr_prefix::r_frag ->
       match rule with
       | [] -> None
-| (T term)::rhs ->
+      | (T term)::rhs ->
         if curr_prefix = term then
-        (match_element rules rhs accept derivation r_frag)
+        (match_element rules rhs accept derivList r_frag)
         else None
       | (N nterm)::rhs ->
-        (matcher nterm rules (rules nterm) (match_element rules rhs accept) derivation frag)
-in 
+        (matcher nterm rules (rules nterm) (match_element rules rhs accept) derivList frag)
+  in 
 
 
   let start = (fst gram) in
