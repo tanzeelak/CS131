@@ -142,3 +142,98 @@ let awkish_grammar =
 
 (* prodduc func *) 
 (snd awkish_grammar) Expr;;
+
+let produce_nt rules start = rules start;;
+
+(* example *)
+produce_nt (snd awkish_grammar) Expr;;
+
+
+(*
+let match_frag gram start derivedList suffix frag accept =
+let rhsElem = produce_nt gram start in
+match rhsElem with
+| [] -> None
+| (N nterm)::t ->
+match_frag gram nterm rhsElem t frag accept
+| (T term)::t ->
+if start = term then
+
+else
+return None
+
+*)
+
+(*
+let rec depMatcher start rules match_start_rules accept deriv frag =
+
+  let rec match_elem rules rule accept deriv frag =
+  match rule with
+  | [] -> accept deriv frag
+  | _ ->
+    match frag with
+    | [] -> None
+    | hPrefix::restPrefix ->
+      match rule with
+      | [] -> None
+      | (T term)::rhs ->
+        if hPrefix = term then
+        match_elem rules rhs accept deriv restPrefix
+        else
+        None
+      | (N nterm)::rhs ->
+      matcher nterm rules (rules nterm) (match_elem rules rhs accept) deriv frag
+  in
+
+  let rec matcher start rules match_start_rules accept deriv frag =
+  match match_start_rules with
+  | [] -> None
+  | hRule::restRules ->
+    match (match_elem rules hRule accept (deriv@[start, hrule]) frag) with
+    | None -> matcher start rules restRules accept deriv frag
+    | Some res -> Some res
+  in
+
+matcher start rules match_start_rules accept deriv frag
+;;
+
+*)
+
+(*
+let parse_prefix g =
+  let start = (fst g) in
+  let rules = (snd g) in
+  let match_start_rules = (snd g) (fst g)
+depMatcher start rules match_start_rules accept [] frag
+;;
+
+*)
+
+
+
+let parse_prefix gram accept frag =
+  let rec match_element rules rule accept derivation frag = match rule with
+  | [] -> accept derivation frag
+  | _ -> 
+    match frag with
+    | [] -> None
+    | curr_prefix::r_frag -> 
+      match rule with
+      | [] -> None
+      | (T term)::rhs -> 
+        if curr_prefix = term then 
+        (match_element rules rhs accept derivation r_frag) 
+        else None
+      | (N nterm)::rhs ->
+        (matcher nterm rules (rules nterm) (match_element rules rhs accept) derivation frag)
+
+
+  and matcher start rules matching_start_rules accept derivation frag =
+  match matching_start_rules with
+  | [] -> None
+  | top_rule::other_rules ->
+    match (match_element rules top_rule accept (derivation@[start, top_rule]) frag) with
+    | None -> matcher start rules other_rules accept derivation frag
+    | Some res -> Some res
+  in
+matcher (fst gram) (snd gram) ((snd gram) (fst gram)) accept [] frag
