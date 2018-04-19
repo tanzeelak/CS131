@@ -176,27 +176,29 @@ let rec matchXRules start rules currNT accept derivList frag =
 match currNT with
 | [] -> None
 | headRule::restRules ->
-  match (matchYElem rules headRule accept (derivList@[start, headRule]) frag) with
+  let newDerivList = (derivList@[start, headRule]) in
+  match (matchYElem headRule rules accept newDerivList frag) with
   | None -> matchXRules start rules restRules accept derivList frag
   | Some res -> Some res
 
 and 
 
-matchYElem rules rule accept derivList frag =
-match rule with
+matchYElem currRule rules accept derivList frag =
+match currRule with
 | [] -> accept derivList frag
 | _ ->
   match frag with
   | [] -> None
-  | curr_prefix::r_frag ->
-    match rule with
+  | headPrefix::restPrefixes ->
+    match currRule with
     | [] -> None
-    | (T term)::rhs ->
-      if curr_prefix = term then
-      (matchYElem rules rhs accept derivList r_frag)
+    | (T headRHSElem)::restRHSElem ->
+    if headPrefix = headRHSElem then
+      matchYElem restRHSElem rules accept derivList restPrefixes
       else None
-    | (N nterm)::rhs ->
-      (matchXRules nterm rules (rules nterm) (matchYElem rules rhs accept) derivList frag)
+    | (N headRHSElem)::restRHSElem ->
+      let currNT = produceNT rules headRHSElem in 
+      matchXRules headRHSElem rules currNT (matchYElem restRHSElem rules accept) derivList frag
 ;;
 
 let parse_prefix gram accept frag = 
@@ -214,3 +216,15 @@ let test1 =
 ((parse_prefix awkish_grammar accept_all ["9"])
  = Some ([(Expr, [N Term]); (Term, [N Num]); (Num, [T "9"])], []))
 ;;	  
+
+
+
+let test2 =
+  ((parse_prefix awkish_grammar accept_all ["9"; "+"; "$"; "1"; "+"])
+   = Some
+       ([(Expr, [N Term; N Binop; N Expr]); (Term, [N Num]); (Num, [T "9"]);
+		 (Binop, [T "+"]); (Expr, [N Term]); (Term, [N Lvalue]);
+		  (Lvalue, [T "$"; N Expr]); (Expr, [N Term]); (Term, [N Num]);
+			    (Num, [T "1"])],
+			    ["+"]))
+;;
