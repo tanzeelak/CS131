@@ -148,15 +148,6 @@ let awkish_grammar =
 ;;
 
 
-(* prodduc func *) 
-(snd awkish_grammar) Expr;;
-
-let produce_nt rules start = rules start;;
-
-(* example *)
-produce_nt (snd awkish_grammar) Expr;;
-
-
 (*
 let match_frag gram start derivedList suffix frag accept =
 let rhsElem = produce_nt gram start in
@@ -173,19 +164,25 @@ return None
 *)
 
 
+(* prodduc func *) 
+(snd awkish_grammar) Expr;;
 
+let produceNT rules start = rules start;;
 
-let rec matcher start rules curr_nt accept derivList frag =
-match curr_nt with
+(* example *)
+produceNT (snd awkish_grammar) Expr;;
+
+let rec matchXRules start rules currNT accept derivList frag =
+match currNT with
 | [] -> None
 | headRule::restRules ->
-  match (match_element rules headRule accept (derivList@[start, headRule]) frag) with
-  | None -> matcher start rules restRules accept derivList frag
+  match (matchYElem rules headRule accept (derivList@[start, headRule]) frag) with
+  | None -> matchXRules start rules restRules accept derivList frag
   | Some res -> Some res
 
 and 
 
-match_element rules rule accept derivList frag =
+matchYElem rules rule accept derivList frag =
 match rule with
 | [] -> accept derivList frag
 | _ ->
@@ -196,17 +193,17 @@ match rule with
     | [] -> None
     | (T term)::rhs ->
       if curr_prefix = term then
-      (match_element rules rhs accept derivList r_frag)
+      (matchYElem rules rhs accept derivList r_frag)
       else None
     | (N nterm)::rhs ->
-      (matcher nterm rules (rules nterm) (match_element rules rhs accept) derivList frag)
+      (matchXRules nterm rules (rules nterm) (matchYElem rules rhs accept) derivList frag)
 ;;
 
 let parse_prefix gram accept frag = 
   let start = (fst gram) in
   let rules = (snd gram) in
-  let curr_nt = produce_nt (snd gram) (fst gram) in
-matcher start rules curr_nt accept [] frag
+  let currNT = produceNT (snd gram) (fst gram) in
+matchXRules start rules currNT accept [] frag
 ;;
 
 let test0 =
