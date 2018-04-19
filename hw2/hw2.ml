@@ -212,7 +212,10 @@ depMatcher start rules match_start_rules accept [] frag
 
 
 let parse_prefix gram accept frag =
-  let rec match_element rules rule accept derivation frag = match rule with
+
+(*
+  let rec match_element rules rule accept derivation frag = 
+  match rule with
   | [] -> accept derivation frag
   | _ -> 
     match frag with
@@ -236,4 +239,40 @@ let parse_prefix gram accept frag =
     | None -> matcher start rules other_rules accept derivation frag
     | Some res -> Some res
   in
-matcher (fst gram) (snd gram) ((snd gram) (fst gram)) accept [] frag
+*)
+
+
+let rec matcher start rules matching_start_rules accept derivation frag =
+  match matching_start_rules with
+  | [] -> None
+| top_rule::other_rules ->
+    match (match_element rules top_rule accept (derivation@[start, top_rule]) frag) with
+    | None -> matcher start rules other_rules accept derivation frag
+    | Some res -> Some res
+
+and 
+
+match_element rules rule accept derivation frag =
+  match rule with
+  | [] -> accept derivation frag
+| _ ->
+    match frag with
+    | [] -> None
+| curr_prefix::r_frag ->
+      match rule with
+      | [] -> None
+| (T term)::rhs ->
+        if curr_prefix = term then
+        (match_element rules rhs accept derivation r_frag)
+        else None
+      | (N nterm)::rhs ->
+        (matcher nterm rules (rules nterm) (match_element rules rhs accept) derivation frag)
+in 
+
+
+  let start = (fst gram) in
+  let rules = (snd gram) in
+  let match_start_rules = (snd gram) (fst gram) in
+
+matcher start rules match_start_rules accept [] frag
+;;
