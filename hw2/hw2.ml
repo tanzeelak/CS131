@@ -196,8 +196,9 @@ match currRule with
       matchYElem restRHSElem rules accept derivList restPrefixes
       else None
     | (N headRHSElem)::restRHSElem ->
-      let currNT = produceNT rules headRHSElem in 
-      matchXRules headRHSElem rules currNT derivList (matchYElem restRHSElem rules accept) frag
+let currNT = produceNT rules headRHSElem in
+let outerAccept = matchYElem restRHSElem rules accept in
+      matchXRules headRHSElem rules currNT derivList outerAccept frag
 ;;
 
 let parse_prefix gram accept frag = 
