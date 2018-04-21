@@ -179,7 +179,7 @@ match currNT with
   let newDerivList = (derivList@[start, headRule]) in
   match (matchYElem headRule rules accept newDerivList frag) with
   | None -> matchXRules start rules restRules derivList accept frag
-  | Some res -> Some res
+  | res -> res
 
 and 
 
@@ -191,9 +191,8 @@ match currRule with
   | [] -> None
   | headPrefix::restPrefixes ->
     match currRule with
-    | [] -> None
     | (T headRHSElem)::restRHSElem ->
-    if headPrefix = headRHSElem then
+      if headRHSElem = headPrefix then
       matchYElem restRHSElem rules accept derivList restPrefixes
       else None
     | (N headRHSElem)::restRHSElem ->
