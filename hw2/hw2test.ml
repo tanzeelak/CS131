@@ -1,24 +1,31 @@
+type awksub_nonterminals =
+| Expr | Term | Lvalue | Incrop | Binop | Num
+;;
+
 let accept_all derivation string = Some (derivation, string)
+;;
+
 let accept_empty_suffix derivation = function
    | [] -> Some (derivation, [])
    | _ -> None
-
-
-(*
- let includes_zero derivation = function
- | [] -> false
-| (_,"0")::_ -> true
-| h::t -> includes t
 ;;
 
-let accept_includes_zero derivation string =
-if includes_zero derivation then
-Some(derivation, string)
+let rec accept_includes_zero derivation string =
+match string with 
+|[] -> None
+|head::tail ->
+if head = "0" then
+Some (derivation)
 else
-None
+accept_includes_zero derivation tail
 ;;
-*)
 
+
+let rec accept_number5 derivation = function
+        |[] -> None
+        |head::tail -> if head = "5" then Some (derivation)
+else accept_number5 derivation tail
+;;
 
 let g1 = 
 (Expr,
@@ -48,7 +55,9 @@ let g1 =
      [T"5"]; [T"6"]; [T"7"]; [T"8"]; [T"9"]])
 ;;
 
-let test_1 = (
+let test_1 = (parse_prefix g1 accept_empty_suffix ["4";"%";"/";"8";"-";"("; "$"; "8"; "++"; ")"] != None) ;;
+
+let test_2 = (
 parse_prefix g1 accept_all ["4";"%";"/";"8";"-";"("; "$"; "8"; "++"; ")"]
 = 
 Some
