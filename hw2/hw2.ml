@@ -176,29 +176,28 @@ let rec matchXRules start rules currNT derivList accept frag =
 match currNT with
 | [] -> None
 | headRule::restRules ->
-  let newDerivList = (derivList@[start, headRule]) in
+  let newDerivList = derivList@[(start, headRule)] in
   match (matchYElem headRule rules accept newDerivList frag) with
   | None -> matchXRules start rules restRules derivList accept frag
-  | res -> res
+  | Some(d,s) -> Some(d,s)
 
 and 
 
 matchYElem currRule rules accept derivList frag =
 match currRule with
 | [] -> accept derivList frag
-| _ ->
+| (T headRHSElem)::restRHSElem ->
+  ( (* Terminal element so we match the prefix of the fragment recursively *)
   match frag with
   | [] -> None
   | headPrefix::restPrefixes ->
-    match currRule with
-    | (T headRHSElem)::restRHSElem ->
       if headRHSElem = headPrefix then
       matchYElem restRHSElem rules accept derivList restPrefixes
-      else None
-    | (N headRHSElem)::restRHSElem ->
-let currNT = produceNT rules headRHSElem in
-let outerAccept = matchYElem restRHSElem rules accept in
-      matchXRules headRHSElem rules currNT derivList outerAccept frag
+      else None)
+| (N headRHSElem)::restRHSElem ->
+  (let currNT = produceNT rules headRHSElem in
+  let outerAccept = matchYElem restRHSElem rules accept in
+  matchXRules headRHSElem rules currNT derivList outerAccept frag)
 ;;
 
 let parse_prefix gram accept frag = 
