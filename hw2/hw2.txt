@@ -1,0 +1,52 @@
+1)
+Why I Implemented the Way I Did: 
+I implemented the convert_grammar such that it separates the input g and sends
+the starting expression and a function that takes each input nonterminal and
+matches it to a corresponding rule. I used a currying function because we will
+be giving the nonterminal input. The match_rules function recursively (because
+this is ocaml) checks that the curried nonterminal is equal to the current
+lefthandside of the current rule we are looking at. If the expressions are
+equal, I append this to my list fo good rules to a recursive call to
+match_rules to continue adding good rules. Otherwise, I just make the recursive
+call without appending to my good rules. The result is a list of good
+Other Considered Approaches:
+I had considered using a dictionary type method, in which my function returns a
+matcher for each possible input. I could not figure out how to implement this
+such that it was not manually hardcoded matching, so I abandoned this idea.
+I originally tried to pass in an empty list of rules that I would recursively
+append to. This solution could have worked, but I was having type errors and
+recursviely appending to (rhsRule) did not have the errors I was experiencing.
+2)
+Why I Implemented the Way I Did:
+I implemented parse_prefix by passing the inputs and the nonterminals (created
+from the production function) into matchXRules.
+This function matches a set of nonterminal rules, x-horizontally. It recursively
+interates through the produced rules, appending to a derived list of matching
+rules to get the eventual terminal rule. If matchXRules gets a terminal rule, the
+function ends. Otherwise, matchXElem looks at the next element in the current
+produced rules to find its terminal result. 
+The matchYElem matches y-vertically, checking if the current rule
+is terminal or nonterminal. If terminal, matchYElem atttempts to match the
+prefix of the fragment to the terminal element, recursively passing that element
+and resulting suffix into matchYElem (in order to find the final terminal). If
+nonterminal, matchYElem will want to look horizontally to check if any of the
+other rules are nonterminal. To do this, matchYElem recomputes the current
+list of nonterminals from the production function and creates an "outer"
+acceptor. The outer acceptor essentially passes the current element back into
+matchYElem to find its final terminal result. This resulting outer acceptor is
+what is fianlly passed back in the horizontal matchXRules funtion. In the final
+case of matchYElem, we coudl alos receive an eempty list from currRule, this
+means we ill test final acceptor with the current derivedList. the result is
+passed back "up" vertically through the nonterminal parts of the functions and
+gives the final output.
+Other Considered Approaches:
+I was trying to pass the terminal result all the way back up to the first set
+of terminal rules, but this proved difficult. Instead, I ended up creating a
+new instance of the matchXRules to continue iterating through the suffix of the
+fragment.
+I had another function in which I created all the possible prefix/suffix pairs.
+These pairs would be passed into a deriving function in which I would find all
+the possible derived lists to the corresponding prefix and replace it such that
+each pair was a deriv/suffix pair. These would then be passed into the acceptor
+is the correct order. Creating a bunch of pairs showed to be unncessary as I
+could split up the fragment recursively instead.

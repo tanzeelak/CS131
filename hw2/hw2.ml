@@ -206,24 +206,3 @@ let parse_prefix gram accept frag =
   let currNT = produceNT (snd gram) (fst gram) in
 matchXRules start rules currNT [] accept frag
 ;;
-
-let test0 =
-((parse_prefix awkish_grammar accept_all ["ouch"]) = None)
-;;
-
-let test1 =
-((parse_prefix awkish_grammar accept_all ["9"])
- = Some ([(Expr, [N Term]); (Term, [N Num]); (Num, [T "9"])], []))
-;;	  
-
-
-
-let test2 =
-  ((parse_prefix awkish_grammar accept_all ["9"; "+"; "$"; "1"; "+"])
-   = Some
-       ([(Expr, [N Term; N Binop; N Expr]); (Term, [N Num]); (Num, [T "9"]);
-		 (Binop, [T "+"]); (Expr, [N Term]); (Term, [N Lvalue]);
-		  (Lvalue, [T "$"; N Expr]); (Expr, [N Term]); (Term, [N Num]);
-			    (Num, [T "1"])],
-			    ["+"]))
-;;
