@@ -1,3 +1,4 @@
+// A test harness, with a main method. Invoke it via a shell command like "java UnsafeMemory Synchronized 8 1000000 6 5 6 3 0 3". Here, Synchronized means to test the SynchronizedState implementation; 8 means to divide the work into 8 threads of roughly equal size; 1000000 means to do a million successful swap transitions total; 6 is maxval, an integer in the range [0,127] as described above; and the remaining five numbers are the initial values for the five entries in the state array. The shell command outputs a string like "Threads average 3318.01 ns/transition", giving the approximate average number of real-time nanoseconds that it took a thread to do a successful swap, including all the overhead. It also outputs an error diagnostic if a reliability test fails.
 class UnsafeMemory {
     public static void main(String args[]) {
 	if (args.length < 3)

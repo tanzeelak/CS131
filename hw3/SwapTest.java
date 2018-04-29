@@ -1,5 +1,6 @@
 import java.util.concurrent.ThreadLocalRandom;
 
+//A Runnable class that tests a state implementation by performing a given number of successful swaps on it. It does not count failed swaps.
 class SwapTest implements Runnable {
     private int nTransitions;
     private State state;
