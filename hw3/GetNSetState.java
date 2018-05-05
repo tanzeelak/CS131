@@ -1,6 +1,6 @@
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
-class GetNSet implements State {
+class GetNSetState implements State {
     private byte[] value;
     private AtomicIntegerArray valueAtomic;
     private byte maxval;
@@ -24,12 +24,12 @@ class GetNSet implements State {
 	return array;
     }
     
-    GetNSet(byte[] v) {
+    GetNSetState(byte[] v) {
 	copyToAtomicArray(v);
 	maxval = 127;
     }
 
-    GetNSet(byte[] v, byte m) {
+    GetNSetState(byte[] v, byte m) {
 	copyToAtomicArray(v);
 	maxval = m;
     }
