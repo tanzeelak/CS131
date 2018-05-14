@@ -1,11 +1,10 @@
 tower(0,[],C) :-
     counts(C).
-tower(N,T,C) :-
+tower(N,T,counts(Top,Bottom, Left, Right)) :-
 /*    tower(N,[Head:Tail],C), 
     isMatrix(T, Rows, Cols), */
-    matrixValid(T, Rows, Cols, N)
+    isMatrixValid(T, Rows, Cols, N)
 		   .
-
 
 rowLength(N, List) :-
     length(List, N).
@@ -14,9 +13,11 @@ isMatrix(M, Row, Col) :-
     length(M, Row),
     maplist(rowLength(Col), M).
 
-matrixValid(M, Row, Col, N) :-
+isMatrixValid(M, Row, Col, N) :-
     length(M, Row),
     maplist(rowLength(Col), M),
+    Row=N,
+    Col=N,
     fd_domain(Row, 0, N).
 
 
