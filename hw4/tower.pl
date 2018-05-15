@@ -1,33 +1,41 @@
+tower(0, [], counts([],[],[],[])).
+tower(1,[[1]], counts([1],[1],[1],[1])).
 tower(N,T,counts(Top, Bottom, Left, Right)) :-
-    isMatrixValid(T, RowCnt, ColCnt, N)
-  /*  topCount(T,Top) */
-		   .
+    isMatrixValid(T, N).
 
+%Transpose Clauz
+transpose([], []).
+transpose([F|Fs], Ts) :-
+    transpose(F, [F|Fs], Ts).
+transpose([], _, []).
+transpose([_|Rs], Ms, [Ts|Tss]) :-
+    lists_firsts_rests(Ms, Ts, Ms1),
+    transpose(Rs, Ms1, Tss).
+
+lists_firsts_rests([], [], []).
+lists_firsts_rests([[F|Os]|Rest], [F|Fs], [Os|Oss]) :-
+            lists_firsts_rests(Rest, Fs, Oss).
+
+%Matrix Contraintz
 rowLength(N, List) :-
     length(List, N).
 
 checkRange(N, List) :-
-    fd_domain(List, 0, N).
+    fd_domain(List, 1, N).
 
-isMatrixValid(M, RowCnt, ColCnt, N) :-
-    length(M, RowCnt), /* length(?List,?Int): counts num of rows */
-    maplist(rowLength(ColCnt), M), /* currying of matrix of lists: counts num of cols */
-    RowCnt#=N,
-    ColCnt#=N,
-    /* needs to check rows not counts */
-    maplist(checkRange(N), M)
-	   .
+goodDomainLists(M, N) :-
+    maplist(checkRange(N),M),
+    maplist(fd_all_different,M),
+    maplist(fd_labeling,M).
 
+isMatrixValid(M,N) :-
+    length(M, N),
+    maplist(rowLength(N), M),
+    goodDomainLists(M,N),
+    transpose(M,TransposedM),
+    goodDomainLists(TransposedM,N).
 
-
-accessMatrixIndex(M, I, J, Val) :-
-    nth0(I, M, Row),
-        nth0(J, Row, Val).
-
-matrixHasNLists(T, N) :-
-    findall(Val, accessMatrixIndex(T, _, _, Val), Row),
-    write(Row).
-
+%Iterate thru matrix ;;;;;)
 list_empty([], true).
 list_empty([_|_], false).
 
@@ -45,6 +53,7 @@ checkRow(MaxHeight,TowerCnt,[RowHead|RowTail]) :-
     RowHead #=<# MaxHeight,!,
     checkRow(MaxHeight,TowerCnt,RowTail).
 
-countLeft([MHead:MTail],[LeftHead:LeftTail]) :-
+countLeft([],[]).
+countLeft([MHead|MTail],[LeftHead|LeftTail]) :-
     checkRow(0,LeftHead,MHead),
     countLeft(MTail,LeftTail).
