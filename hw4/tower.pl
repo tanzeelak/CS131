@@ -16,6 +16,15 @@ lists_firsts_rests([], [], []).
 lists_firsts_rests([[F|Os]|Rest], [F|Fs], [Os|Oss]) :-
             lists_firsts_rests(Rest, Fs, Oss).
 
+%Reverse Clauz
+myReverse([],[]) :- !.
+myReverse([H|T],X) :-
+    !,
+    myReverse(H,NewH),
+    myReverse(T, NewT),
+    append(NewT, [NewH], X).
+myReverse(X,X).
+
 %Matrix Contraintz
 rowLength(N, List) :-
     length(List, N).
@@ -41,16 +50,15 @@ list_empty([_|_], false).
 
 checkRow(_,0,[]).
 checkRow(MaxHeight,TowerCnt,[RowHead|RowTail]) :-
-    TowerCnt >= 0,
-    list_empty([RowHead|RowTail],false),
-    RowHead #># MaxHeight,
-    NewMaxHeight is RowHead,
-    NewTowerCnt is TowerCnt-1,!,
-    checkRow(NewMaxHeight,NewTowerCnt,RowTail).
+ %   TowerCnt >= 0,
+ %   list_empty([RowHead|RowTail],false),
+    RowHead #> MaxHeight,
+    NewTowerCnt is TowerCnt-1,
+    checkRow(RowHead,NewTowerCnt,RowTail).
 checkRow(MaxHeight,TowerCnt,[RowHead|RowTail]) :-
-    TowerCnt >= 0,
-    list_empty([RowHead|RowTail],false),
-    RowHead #=<# MaxHeight,!,
+%    TowerCnt >= 0,
+%    list_empty([RowHead|RowTail],false),
+%    RowHead #=<# MaxHeight,
     checkRow(MaxHeight,TowerCnt,RowTail).
 
 countLeft([],[]).
