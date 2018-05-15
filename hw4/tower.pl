@@ -6,9 +6,8 @@ tower(N,T,counts(Top, Bottom, Left, Right)) :-
 rowLength(N, List) :-
     length(List, N).
 
-isMatrix(M, Row, Col) :-
-    length(M, Row),
-    maplist(rowLength(Col), M).
+checkRange(N, List) :-
+    fd_domain(List, 0, N).
 
 isMatrixValid(M, RowCnt, ColCnt, N) :-
     length(M, RowCnt), /* length(?List,?Int): counts num of rows */
@@ -16,7 +15,9 @@ isMatrixValid(M, RowCnt, ColCnt, N) :-
     RowCnt#=N,
     ColCnt#=N,
     /* needs to check rows not counts */
-    fd_domain(RowCnt, 0, N). 
+    maplist(checkRange(N), M)
+	   .
+
 
 
 accessMatrixIndex(M, I, J, Val) :-
@@ -27,37 +28,21 @@ matrixHasNLists(T, N) :-
     findall(Val, accessMatrixIndex(T, _, _, Val), Row),
     write(Row).
 
-
-/*
-checkRow(N,N,0,[_]).
-checkRow(MaxHeight,N,TowerCnt,[RowHead|RowTail]) :-
-    RowHead #> #MaxHeight,
-    checkRow(RowHead,TowerCnt-1,[RowTail]).
-checkRow(MaxHeight,N,TowerCnt,[RowHead|RowTail]) :-
-    RowHead #=< #MaxHeight,
-    checkRow(MaxHeight,N,TowerCnt,[RowTail]).
-
-countLeft([MHead:MTail], N, [LeftHead:LeftTail]) :-
-    checkRow(0,N,LeftHead,MHead),
-    countLeft(MTail,N,LeftTail).
-*/
-
 list_empty([], true).
 list_empty([_|_], false).
 
 checkRow(_,0,[]).
-checkRow(_,0,[_]).
 checkRow(MaxHeight,TowerCnt,[RowHead|RowTail]) :-
-    TowerCnt > 0,
+    TowerCnt >= 0,
     list_empty([RowHead|RowTail],false),
     RowHead #># MaxHeight,
     NewMaxHeight is RowHead,
-    NewTowerCnt is TowerCnt-1,
+    NewTowerCnt is TowerCnt-1,!,
     checkRow(NewMaxHeight,NewTowerCnt,RowTail).
 checkRow(MaxHeight,TowerCnt,[RowHead|RowTail]) :-
-    TowerCnt > 0,
+    TowerCnt >= 0,
     list_empty([RowHead|RowTail],false),
-    RowHead #=<# MaxHeight,
+    RowHead #=<# MaxHeight,!,
     checkRow(MaxHeight,TowerCnt,RowTail).
 
 countLeft([MHead:MTail],[LeftHead:LeftTail]) :-
