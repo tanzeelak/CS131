@@ -2,13 +2,17 @@ tower(0, [], counts([],[],[],[])).
 tower(1,[[1]], counts([1],[1],[1],[1])).
 tower(N,T,counts(Top, Bottom, Left, Right)) :-
     isMatrixValid(T, N),
+    length(Right, N),
+    length(Left, N),
+    reverse(Right,RevRight),
+    reverse(Top,RevTop),
     countSide(T,Left),
     rotate90(T, TRotate),
     countSide(TRotate, Bottom),
     rotate90(TRotate, TRotate2),
-    countSide(TRotate2, Right),
+    countSide(TRotate2, RevRight),
     rotate90(TRotate2, TRotate3),
-    countSide(TRotate3, Top)
+    countSide(TRotate3, RevTop)
 .
 
 %Rotate Clauz
