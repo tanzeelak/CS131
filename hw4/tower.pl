@@ -50,18 +50,18 @@ list_empty([_|_], false).
 
 checkRow(_,0,[]).
 checkRow(MaxHeight,TowerCnt,[RowHead|RowTail]) :-
- %   TowerCnt >= 0,
- %   list_empty([RowHead|RowTail],false),
+    TowerCnt #>= 0,
+    list_empty([RowHead|RowTail],false),
     RowHead #> MaxHeight,
     NewTowerCnt is TowerCnt-1,
     checkRow(RowHead,NewTowerCnt,RowTail).
 checkRow(MaxHeight,TowerCnt,[RowHead|RowTail]) :-
-%    TowerCnt >= 0,
-%    list_empty([RowHead|RowTail],false),
-%    RowHead #=<# MaxHeight,
+    TowerCnt #>= 0,
+    list_empty([RowHead|RowTail],false),
+    RowHead #=< MaxHeight,
     checkRow(MaxHeight,TowerCnt,RowTail).
 
-countLeft([],[]).
-countLeft([MHead|MTail],[LeftHead|LeftTail]) :-
+countSide([],[]).
+countSide([MHead|MTail],[LeftHead|LeftTail]) :-
     checkRow(0,LeftHead,MHead),
     countLeft(MTail,LeftTail).
