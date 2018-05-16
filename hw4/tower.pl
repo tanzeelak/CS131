@@ -1,7 +1,11 @@
 tower(0, [], counts([],[],[],[])).
 tower(1,[[1]], counts([1],[1],[1],[1])).
 tower(N,T,counts(Top, Bottom, Left, Right)) :-
-    isMatrixValid(T, N),
+    isTValid(T, N),
+    transpose(T,TransposeT),
+    isTValid(TransposeT,N),
+    isCountsValid(counts(Top,Bottom,Left,Right),N),
+    maplist(fd_labeling, T),
     length(Right, N),
     length(Left, N),
     reverse(Right,RevRight),
@@ -12,8 +16,8 @@ tower(N,T,counts(Top, Bottom, Left, Right)) :-
     rotate90(TRotate, TRotate2),
     countSide(TRotate2, RevRight),
     rotate90(TRotate2, TRotate3),
-    countSide(TRotate3, RevTop)
-.
+    countSide(TRotate3, RevTop).
+%    maplist(fd_labeling,T).
 
 %Rotate Clauz
 rotate90(M, MRotate) :-
@@ -34,7 +38,6 @@ lists_firsts_rests([[F|Os]|Rest], [F|Fs], [Os|Oss]) :-
             lists_firsts_rests(Rest, Fs, Oss).
 
 %Reverz Clauz ;PPPPPPP
-
 reverseMatrix([],RevMatrix).
 reverseMatrix([MHead|MTail],RevMatrix) :-
     reverse(MHead, RevHead),
@@ -58,30 +61,39 @@ checkRange(N, List) :-
 
 goodDomainLists(M, N) :-
     maplist(checkRange(N),M),
-    maplist(fd_all_different,M),
-    maplist(fd_labeling,M).
+    maplist(fd_all_different,M).
+%    maplist(fd_labeling,M).
+	   
 
-isMatrixValid(M,N) :-
-    length(M, N),
+isValidSide(Side, N) :-
+    length(Side, N),
+    fd_domain(Side, 1, N).
+
+isTValid(M,N) :-
+    length(M,N),
     maplist(rowLength(N), M),
-    goodDomainLists(M,N),
-    transpose(M,TransposedM),
-    goodDomainLists(TransposedM,N).
+    goodDomainLists(M,N).
+
+isCountsValid(counts(Top, Bottom, Left, Right), N) :-
+    isValidSide(Top, N),
+    isValidSide(Bottom, N),
+    isValidSide(Left, N),
+    isValidSide(Right, N).
 
 %Iterate thru matrix ;;;;;)
 list_empty([], true).
 list_empty([_|_], false).
 
 checkRow(CurrCnt,_,TowerCnt,[]) :-
-    TowerCnt is CurrCnt.
+    TowerCnt #=# CurrCnt.
 checkRow(CurrCnt,MaxHeight,TowerCnt,[RowHead|RowTail]) :-
     list_empty([RowHead|RowTail],false),
     RowHead #> MaxHeight,
-    NewCurrCnt is CurrCnt+1,
+    NewCurrCnt is CurrCnt+1, !,
     checkRow(NewCurrCnt,RowHead,TowerCnt,RowTail).
 checkRow(CurrCnt,MaxHeight,TowerCnt,[RowHead|RowTail]) :-
     list_empty([RowHead|RowTail],false),
-    RowHead #=< MaxHeight,
+    RowHead #=< MaxHeight, !,
     checkRow(CurrCnt,MaxHeight,TowerCnt,RowTail).
 
 countSide([],[]).
