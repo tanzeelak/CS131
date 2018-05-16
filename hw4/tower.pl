@@ -80,7 +80,7 @@ checkRow(CurrCnt,MaxHeight,TowerCnt,[RowHead|RowTail]) :-
     RowHead #=< MaxHeight,
     checkRow(CurrCnt,MaxHeight,TowerCnt,RowTail).
 
-countSide(_,[],[]).
+countSide([],[]).
 countSide([MHead|MTail],[SideHead|SideTail]) :-
     checkRow(0,0,SideHead,MHead),
     countSide(MTail,SideTail).
