@@ -1,3 +1,4 @@
+%tower 3 wawo
 tower(0, [], counts([],[],[],[])).
 tower(1,[[1]], counts([1],[1],[1],[1])).
 tower(N,T,counts(Top, Bottom, Left, Right)) :-
@@ -6,6 +7,9 @@ tower(N,T,counts(Top, Bottom, Left, Right)) :-
     isTValid(TransposeT,N),
     isCountsValid(counts(Top,Bottom,Left,Right),N),
     maplist(fd_labeling, T),
+    generateRes(N,T,counts(Top,Bottom,Left,Right)).
+
+generateRes(N,T, counts(Top, Bottom, Left, Right)) :-
     length(Right, N),
     length(Left, N),
     reverse(Right,RevRight),
@@ -17,7 +21,6 @@ tower(N,T,counts(Top, Bottom, Left, Right)) :-
     countSide(TRotate2, RevRight),
     rotate90(TRotate2, TRotate3),
     countSide(TRotate3, RevTop).
-%    maplist(fd_labeling,T).
 
 %Rotate Clauz
 rotate90(M, MRotate) :-
@@ -44,15 +47,7 @@ reverseMatrix([MHead|MTail],RevMatrix) :-
     append([RevHead],RevMatrix,Res),
     reverseMatrix(MTail,Res).
 
-myReverse([],[]) :- !.
-myReverse([H|T],X) :-
-    !,
-    myReverse(H,NewH),
-    myReverse(T, NewT),
-    append(NewT, [NewH], X).
-myReverse(X,X).
-
-%Matrix Contraintz
+%Matrix Contraintz :o
 rowLength(N, List) :-
     length(List, N).
 
@@ -62,8 +57,6 @@ checkRange(N, List) :-
 goodDomainLists(M, N) :-
     maplist(checkRange(N),M),
     maplist(fd_all_different,M).
-%    maplist(fd_labeling,M).
-	   
 
 isValidSide(Side, N) :-
     length(Side, N),
@@ -100,3 +93,45 @@ countSide([],[]).
 countSide([MHead|MTail],[SideHead|SideTail]) :-
     checkRow(0,0,SideHead,MHead),
     countSide(MTail,SideTail).
+
+%plain_tower 3 
+plain_tower(0, [], counts([],[],[],[])).
+plain_tower(1,[[1]], counts([1],[1],[1],[1])).
+plain_tower(N,T,counts(Top, Bottom, Left, Right)) :-
+    isPlainTValid(T, N),
+    transpose(T,TransposeT),
+    isPlainTValid(TransposeT,N),
+    isPlainCountsValid(counts(Top,Bottom,Left,Right),N),
+    maplist(fd_labeling, T),
+    generateRes(N,T, counts(Top,Bottom,Left,Right)).
+
+%Plain Matrix Contraintz :o
+
+isGoodNum(X,N) :-
+    X > 0,
+    X #=< N.
+
+checkPlainRange(N, []).
+checkPlainRange(N, [Head|Tail]) :-
+    isGoodNum(Head, N),
+    hello(N, Tail).
+
+goodPlainDomainLists(M, N) :-
+    maplist(checkPlainRange(N),M),
+    maplist(fd_all_different,M).
+
+isPlainValidSide(Side, N) :-
+    length(Side, N),
+    fd_domain(Side, 1, N).
+
+isPlainTValid(M,N) :-
+    length(M,N),
+    maplist(rowLength(N), M),
+    goodPlainDomainLists(M,N).
+
+isPlainCountsValid(counts(Top, Bottom, Left, Right), N) :-
+    isPlainValidSide(Top, N),
+    isPlainValidSide(Bottom, N),
+    isPlainValidSide(Left, N),
+    isPlainValidSide(Right, N).
+
