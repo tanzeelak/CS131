@@ -1,4 +1,5 @@
-%tower
+%tower 3
+
 tower(0, [], counts([],[],[],[])).
 tower(1,[[1]], counts([1],[1],[1],[1])).
 tower(N,T,counts(Top, Bottom, Left, Right)) :-
@@ -28,6 +29,7 @@ rotate90(M, MRotate) :-
     maplist(reverse,MTranspose,MRotate).
 
 %Transpose Clauz
+% Used the following link: https://stackoverflow.com/questions/4280986/how-to-transpose-a-matrix-in-prolog
 transpose([], []).
 transpose([F|Fs], Ts) :-
     transpose(F, [F|Fs], Ts).
@@ -39,13 +41,6 @@ transpose([_|Rs], Ms, [Ts|Tss]) :-
 lists_firsts_rests([], [], []).
 lists_firsts_rests([[F|Os]|Rest], [F|Fs], [Os|Oss]) :-
             lists_firsts_rests(Rest, Fs, Oss).
-
-%Reverz Clauz 
-reverseMatrix([],RevMatrix).
-reverseMatrix([MHead|MTail],RevMatrix) :-
-    reverse(MHead, RevHead),
-    append([RevHead],RevMatrix,Res),
-    reverseMatrix(MTail,Res).
 
 %Matrix Contraintz :o
 rowLength(N, List) :-
@@ -74,18 +69,18 @@ isCountsValid(counts(Top, Bottom, Left, Right), N) :-
     isValidSide(Right, N).
 
 %Iterate thru matrix
-list_empty([], true).
-list_empty([_|_], false).
+listEmpty([], true).
+listEmpty([_|_], false).
 
 checkRow(CurrCnt,_,TowerCnt,[]) :-
     TowerCnt #=# CurrCnt.
 checkRow(CurrCnt,MaxHeight,TowerCnt,[RowHead|RowTail]) :-
-    list_empty([RowHead|RowTail],false),
+    listEmpty([RowHead|RowTail],false),
     RowHead #> MaxHeight,
     NewCurrCnt is CurrCnt+1, !,
     checkRow(NewCurrCnt,RowHead,TowerCnt,RowTail).
 checkRow(CurrCnt,MaxHeight,TowerCnt,[RowHead|RowTail]) :-
-    list_empty([RowHead|RowTail],false),
+    listEmpty([RowHead|RowTail],false),
     RowHead #=< MaxHeight, !,
     checkRow(CurrCnt,MaxHeight,TowerCnt,RowTail).
 
@@ -95,6 +90,7 @@ countSide([MHead|MTail],[SideHead|SideTail]) :-
     countSide(MTail,SideTail).
 
 %plain_tower 3 
+
 plain_tower(0, [], counts([],[],[],[])).
 plain_tower(1,[[1]], counts([1],[1],[1],[1])).
 plain_tower(N,T,counts(Top, Bottom, Left, Right)) :-
@@ -114,16 +110,13 @@ checkPlainRange(N, [Head|Tail]) :-
     isGoodNum(Head, N),
     checkPlainRange(N, Tail).
 
-doPlz(N, L):-
-      findall(Num, between(1, N, Num), L).
-
-thirdDiff(N,R):-
-    doPlz(N,L),
+checkPlainUniq(N,R):-
+    findall(Num, between(1, N, Num), L).
     permutation(L,R).
 
 goodPlainDomainLists(M, N) :-
     maplist(checkPlainRange(N),M),
-    maplist(thirdDiff(N),M),
+    maplist(checkPlainUniq(N),M),
     rotate90(M,MRotate),
     maplist(thirdDiff(N),MRotate).
 
@@ -168,4 +161,3 @@ speedup(Ratio) :-
     statistics(cpu_time,[T2PlainTower|_]),
     PlainTowerTime = T2PlainTower - T1PlainTower + 1,
     Ratio is PlainTowerTime/TowerTime.
-    
