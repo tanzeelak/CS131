@@ -102,7 +102,6 @@ plain_tower(N,T,counts(Top, Bottom, Left, Right)) :-
     transpose(T,TransposeT),
     isPlainTValid(TransposeT,N),
     isPlainCountsValid(counts(Top,Bottom,Left,Right),N),
-    maplist(fd_labeling, T),
     generateRes(N,T, counts(Top,Bottom,Left,Right)).
 
 %Plain Matrix Contraintz :o
