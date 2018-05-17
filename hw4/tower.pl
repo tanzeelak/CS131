@@ -106,23 +106,42 @@ plain_tower(N,T,counts(Top, Bottom, Left, Right)) :-
     generateRes(N,T, counts(Top,Bottom,Left,Right)).
 
 %Plain Matrix Contraintz :o
-
 isGoodNum(X,N) :-
-    X > 0,
+    X #> 0,
     X #=< N.
 
 checkPlainRange(N, []).
 checkPlainRange(N, [Head|Tail]) :-
     isGoodNum(Head, N),
-    hello(N, Tail).
+    checkPlainRange(N, Tail).
+
+checkPlainDiff(X) :-
+    sort(X, Sorted),
+    length(X, OriginalLength),
+    length(Sorted, SortedLength),
+        OriginalLength #= SortedLength.
+
+no_duplicates(L) :-
+    setof(X, member(X, L), Set),
+    length(Set, Len),
+    length(L, Len).
+
+doPlz(N, L):-
+      findall(Num, between(1, N, Num), L).
+
+thirdDiff(N,R):-
+    doPlz(N,L),
+    permutation(L,R).
 
 goodPlainDomainLists(M, N) :-
     maplist(checkPlainRange(N),M),
-    maplist(fd_all_different,M).
+    maplist(thirdDiff(N),M),
+    rotate90(M,MRotate),
+    maplist(thirdDiff(N),MRotate).
 
 isPlainValidSide(Side, N) :-
     length(Side, N),
-    fd_domain(Side, 1, N).
+    checkPlainRange(N, Side).
 
 isPlainTValid(M,N) :-
     length(M,N),
