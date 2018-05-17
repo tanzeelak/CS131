@@ -114,17 +114,6 @@ checkPlainRange(N, [Head|Tail]) :-
     isGoodNum(Head, N),
     checkPlainRange(N, Tail).
 
-checkPlainDiff(X) :-
-    sort(X, Sorted),
-    length(X, OriginalLength),
-    length(Sorted, SortedLength),
-        OriginalLength #= SortedLength.
-
-no_duplicates(L) :-
-    setof(X, member(X, L), Set),
-    length(Set, Len),
-    length(L, Len).
-
 doPlz(N, L):-
       findall(Num, between(1, N, Num), L).
 
@@ -153,3 +142,16 @@ isPlainCountsValid(counts(Top, Bottom, Left, Right), N) :-
     isPlainValidSide(Left, N),
     isPlainValidSide(Right, N).
 
+%Ambiguous
+
+compareMatrices([],[]).
+compareMatrices([[1]],[[1]]).
+compareMatrices([T1Head|T1Tail],[T2Head|T2Tail]) :-
+    compare(=,T1Head,T2Head),
+    compareMatrices(T1Tail,T2Tail).
+
+ambiguous(N,C,T1,T2) :-
+    tower(N,T1,C),
+    tower(N,T2,C),
+%    \+compareMatrices(T1,T2).
+    \+ (T1 = T2).
