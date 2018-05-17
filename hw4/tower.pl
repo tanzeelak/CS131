@@ -1,4 +1,4 @@
-%tower 3 wawo
+%tower
 tower(0, [], counts([],[],[],[])).
 tower(1,[[1]], counts([1],[1],[1],[1])).
 tower(N,T,counts(Top, Bottom, Left, Right)) :-
@@ -40,7 +40,7 @@ lists_firsts_rests([], [], []).
 lists_firsts_rests([[F|Os]|Rest], [F|Fs], [Os|Oss]) :-
             lists_firsts_rests(Rest, Fs, Oss).
 
-%Reverz Clauz ;PPPPPPP
+%Reverz Clauz 
 reverseMatrix([],RevMatrix).
 reverseMatrix([MHead|MTail],RevMatrix) :-
     reverse(MHead, RevHead),
@@ -73,7 +73,7 @@ isCountsValid(counts(Top, Bottom, Left, Right), N) :-
     isValidSide(Left, N),
     isValidSide(Right, N).
 
-%Iterate thru matrix ;;;;;)
+%Iterate thru matrix
 list_empty([], true).
 list_empty([_|_], false).
 
@@ -104,7 +104,7 @@ plain_tower(N,T,counts(Top, Bottom, Left, Right)) :-
     isPlainCountsValid(counts(Top,Bottom,Left,Right),N),
     generateRes(N,T, counts(Top,Bottom,Left,Right)).
 
-%Plain Matrix Contraintz :o
+%Plain Matrix Contraintz 
 isGoodNum(X,N) :-
     X #> 0,
     X #=< N.
@@ -153,5 +153,19 @@ compareMatrices([T1Head|T1Tail],[T2Head|T2Tail]) :-
 ambiguous(N,C,T1,T2) :-
     tower(N,T1,C),
     tower(N,T2,C),
-%    \+compareMatrices(T1,T2).
-    \+ (T1 = T2).
+\+ (T1 = T2).
+
+
+%SpeedUp
+
+speedup(Ratio) :-
+    statistics(cpu_time, [T1Tower|_]),
+    tower(4,T, counts([3,3,2,1],[2,1,3,3],[4,2,1,2],[1,2,4,2])),
+    statistics(cpu_time,[T2Tower|_]),
+    TowerTime is T2Tower - T1Tower + 1,
+    statistics(cpu_time, [T1PlainTower|_]),
+    plain_tower(4,T, counts([3,3,2,1],[2,1,3,3],[4,2,1,2],[1,2,4,2])),
+    statistics(cpu_time,[T2PlainTower|_]),
+    PlainTowerTime = T2PlainTower - T1PlainTower + 1,
+    Ratio is PlainTowerTime/TowerTime.
+    
