@@ -6,6 +6,13 @@
     (display "\n")
     '()
     ]
+
+   [(or (equal? (car x) 'quote) (equal? (car y) 'quote)) ;dont recurse if quoted
+    `(if % ,x ,y)
+    ]
+   [(or (equal? (car x) 'if) (equal? (car y) 'if))
+    `(if % ,x ,y)
+        ]
    [(equal? (car x) (car y)) ;head elements are equal so we recurse
     (display `(head elements are equal: car x = ,(car x) AND car y = ,(car y)))
     (display "\n")
@@ -32,17 +39,25 @@
     x
     ]
    [(and (boolean? x)(boolean? y)) ;x and y are booleans to take care of
-    (display "x and y are boolsz")
+    (display "x and y are boolsz \n")
     (if x '% '(not %))
+    ]
+   [(not (and (list? x) (list? y) ) ) ;x or y is a list but not both so we return the if case
+    (display "one is not a list \n")
+    `(if % ,x ,y)
     ]
    [(and (list? x)(list? y)) ;x and y are both lists so we compare
     (display `(compare lists: ,x AND ,y))
     (display "\n")
     (compare-list x y)
     ]
-   [(not (and (list? x) (list? y) ) ) ;x or y is a list but not both so we return the if case
-    (display "one is not a list \n")
-    `(if % ,x ,y)
-    ]
    )
+  )
+
+
+(define (my-tests)
+  (display (equal? (expr-compare 12 12) 12))
+  (display "\n")
+  (display (equal? (expr-compare 12 20) `(if % 12 20) ))
+  (display "\n")
   )
