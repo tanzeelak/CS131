@@ -1,24 +1,25 @@
+(define (create-bindings l1 l2)
+  (cond
+   [(not(equal? (car l1) (car l2)))
+    (display "about to bind") ;about to bind
+    
+    ]
+   )
+  )
+
+;https://stackoverflow.com/questions/16720941/custom-function-for-length-of-a-list-in-scheme
 (define (list-length lst)
   (cond ((null? lst) 0)
 	(else (+ 1 (list-length (cdr lst))))))
 
-
 (define (compare-list x y)
   (cond
-   ;need cases for when one or the other list is empty
    [(or (equal? x '()) (equal? y '()) ) ;base case: two empty lists so we return one too
     (display `(empty: x = ,x y = ,y))
     (display "\n")
     '()
     ]
-;   [(or (and (equal? x '()) (not (equal? y '() )))
-;	(and (equal? y '()) (not (equal? x '() ) ))
-;	)
-;    (display `(one list is empty and not the other: x = ,x AND y = ,y))
-;    (display "\n")
-;    `(if % ,x ,y)
-;    ]
-   [(not (equal? (list-length x) (list-length y) )  )
+   [(not (equal? (list-length x) (list-length y) )  ) ;if list lengths are diff stop
     `(if % ,x ,y)
     ]
    [(or (equal? (car x) 'quote) (equal? (car y) 'quote)) ;dont recurse if quoted
@@ -32,7 +33,16 @@
    [(equal? (car x) (car y)) ;head elements are equal so we recurse
     (display `(head elements are equal: car x = ,(car x) AND car y = ,(car y)))
     (display "\n")
-    (cons (car x) (compare-list (cdr x) (cdr y)) )
+    (cond
+     [(equal? (car x) 'let)
+      (display "LET CASE HERE \n")
+
+      (create-bindings (car (cdr x)) (car (cdr y))) ;want second element of list and pass
+      ]
+     [else
+      (cons (car x) (compare-list (cdr x) (cdr y)) )
+      ]
+     )
     ]
    [(or (list? (car x) ) (list? (car y) ) )  ;if list of lists
     (display `(list of lists: car x = ,(car x) AND car y = ,(car y)))
@@ -96,6 +106,6 @@
 (assert (expr-compare '(quoth (a b)) '(quoth (a c))) '(quoth (a (if % b c))))
 (assert (expr-compare '(if x y z) '(if x z z)) '(if x (if % y z) z))
 (assert (expr-compare '(if x y z) '(g x y z)) '(if % (if x y z) (g x y z)))
-(assert (expr-compare '(let ((a 1)) (f a)) '(let ((a 2)) (g a))) '(let ((a (if % 1 2))) ((if % f g) a)))
+;(assert (expr-compare '(let ((a 1)) (f a)) '(let ((a 2)) (g a))) '(let ((a (if % 1 2))) ((if % f g) a)))
 
 					;)
