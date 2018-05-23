@@ -6,13 +6,12 @@
     (display "\n")
     '()
     ]
-
    [(or (equal? (car x) 'quote) (equal? (car y) 'quote)) ;dont recurse if quoted
     `(if % ,x ,y)
     ]
    [(or (equal? (car x) 'if) (equal? (car y) 'if))
     `(if % ,x ,y)
-        ]
+    ]
    [(equal? (car x) (car y)) ;head elements are equal so we recurse
     (display `(head elements are equal: car x = ,(car x) AND car y = ,(car y)))
     (display "\n")
@@ -54,10 +53,21 @@
    )
   )
 
+(define-syntax-rule (assert output expected)
+  (when (not (equal? output expected))
+	(display "Assertion `") (display #'c) (displayln "' failed.")
+	(display "  Result: ") (displayln output)
+	    (display "Expected: ") (displayln expected)))
 
-(define (my-tests)
-  (display (equal? (expr-compare 12 12) 12))
-  (display "\n")
-  (display (equal? (expr-compare 12 20) `(if % 12 20) ))
-  (display "\n")
-  )
+
+;(define (tests) 
+(assert (expr-compare 12 12) 12)
+(assert (expr-compare 12 20) `(if % 12 20))
+(assert (expr-compare #t #t) '#t)
+(assert (expr-compare #f #f) '#f)
+(assert (expr-compare #t #f) '%)
+(assert (expr-compare #f #t) '(not %))
+(assert (expr-compare 'a '(cons a b)) '(if % a (cons a b)))
+(assert (expr-compare '(cons a b) '(cons a b)) '(cons a b))
+(assert (expr-compare '(cons a b) '(cons a c)) '(cons a (if % b c)))
+;)
