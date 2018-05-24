@@ -6,15 +6,22 @@
            (symbol->string b ) ) )
   )
 
-(define (pair-input-and-binded a b)
+(define (pair-input-and-binded doIRev a b)
   (list
-   a
+   (cond
+    [(equal? doIRev #f)
+     a
+     ]
+    [else
+     b
+     ]    
+    )
    (bind-vals a b)
    )
   )
 
 
-(define (create-bindings l1 l2)
+(define (create-bindings doIRev l1 l2)
   (cond
    [(and (equal? l1 '()) (equal? l2 '()) )
     (display "im empty\n")
@@ -23,13 +30,13 @@
    [(not(equal? (car (car l1)) (car (car l2)) ) )
     (display "about to bind\n") ;about to bind
     (cons
-     (pair-input-and-binded (car (car l1)) (car (car l2)))
-     (create-bindings (cdr l1) (cdr l2) )
+     (pair-input-and-binded doIRev (car (car l1)) (car (car l2)))
+     (create-bindings doIRev (cdr l1) (cdr l2) )
      )
     ]
    [else
     (display "else case\n")
-    (create-bindings (cdr l1) (cdr l2) )
+    (create-bindings doIRev (cdr l1) (cdr l2) )
    ]
    )
   )
@@ -73,7 +80,7 @@
      (string-append
       (symbol->string a )
       "!"
-             (symbol->string b ) ) )
+     (symbol->string b ) ) )
     ]
    [else
     a
@@ -106,7 +113,6 @@
     (def-pair (car l1) (car l2))
     (def-inside (cdr l1) (cdr l2))
     )
-	
     ]
    )
   )
@@ -117,29 +123,7 @@
 		    (equal? item x))
 		  seq))
 
-;(define (is-input-in-mapping a mappings)
-;  (display `(a is : ,a))
-;  (display "\n")
-;  (display `(mappings is : ,mappings))
-;  (display "\n")
-;  (cond
-;   [(equal? mappings '())
-;    (display "finished looking through mappings\n")
-;    '()
-;    ]
-;   [(member? a (car mappings))
-;    (display "is a member\n")
-;     (cdr (car mappings))
-;    ]
-;   [else
-;    (display "looking through next mapping\n")
-;    (is-input-in-mapping a (cdr mappings) )
-;    ]
-;   )
-;  )
-
-
-(define (iterate-thru-body l1 l2  mappings)
+(define (iterate-thru-body l1 l2  mappings1 mappings2)
   (display "i've entered interate-thru-body\n")
   (display `(l1: ,l1 ) )
   (display "\n")
@@ -153,7 +137,7 @@
    [else
     (display "still iterating thru body\n")
     (cond
-     [(equal? (assoc (car l1) mappings) #f) ;we didn't find it in the map
+     [(equal? (assoc (car l1) mappings1) #f) ;we didn't find it in the map
       (display "we didn't find it in the map\n")
       (display `(l1 here: ,(car l1)))
       (display "\n")
@@ -161,23 +145,22 @@
       (display "\n")
       (cons 
        (match-eval2 (car l1) (car l2))
-       (iterate-thru-body (cdr l1) (cdr l2) mappings) 
+       (iterate-thru-body (cdr l1) (cdr l2) mappings1 mappings2) 
        )
       ]
      [else ;we found it in the map
       (display "we foudn it in the map \n")
       (cons
-       (car (cdr (assoc (car l1) mappings) ) )
-       (iterate-thru-body (cdr l1) (cdr l2) mappings)
+       (car (cdr (assoc (car l1) mappings1) ) )
+       (iterate-thru-body (cdr l1) (cdr l2) mappings1 mappings2)
        )
       ]
-     
      )
     ]
   )
   )
 
-(define (func-body l1 l2 mappings)
+(define (func-body l1 l2 mappings1 mappings2)
   (display "ive entered func body\n")
   (display `(l1 is actually: ,l1))
   (display "\n")
@@ -188,25 +171,31 @@
    [(not (list? l1))
     (display "it's not a list\n")
     (cond
-     [(equal? (assoc l1 mappings) #f )
-      (display "we didn't find it")
+     [(equal? (assoc l1 mappings1) #f )
+      (display "we didn't find it\n")
       (match-eval l1 l2)
       ]
-     [else ;we found it in the map 
+     [(equal? (cdr (assoc l1 mappings1)) (cdr (assoc l2 mappings2)))
       (display "we found it in the map\n")
-      (car (cdr (assoc l1 mappings) ))
+      (car (cdr (assoc l1 mappings1) ))
+      ]
+     [(not (equal? (cdr (assoc l1 mappings1)) (cdr (assoc l2 mappings2)) ) )
+      (display "LOL NEED TO IMPLEMENT")
+      (display "we found them in the maps but they have different bindings")
       ]
      )
     ]
    [
     (display "is a list\n")
-    (iterate-thru-body l1 l2 mappings)
+    (iterate-thru-body l1 l2 mappings1 mappings2)
    ]
   )
   )
 
 (define (let-inside l1 l2)
-  (display `(look at my bindings: ,(create-bindings (car l1) (car l2))) )
+  (display "HELLOOOO")
+  (display `(look at my bindings: ,(create-bindings #f (car l1) (car l2))) )
+  (display `(look at my bindings: ,(create-bindings #t (car l1) (car l2))) )
   (display "\n")
   (list
    `let
@@ -214,7 +203,8 @@
    (func-body
     (car (cdr l1) )
     (car (cdr l2) )
-    (create-bindings (car l1) (car l2))
+    (create-bindings #f (car l1) (car l2))
+    (create-bindings #t (car l1) (car l2))
     )
     )
   )
@@ -256,7 +246,6 @@
      [(equal? (car x) 'let)
       (display "LET CASE HERE \n")
       (let-inside (cdr x) (cdr y))
-	      
       ]
      [else
       (cons (car x) (compare-list (cdr x) (cdr y)) )
