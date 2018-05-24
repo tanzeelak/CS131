@@ -29,12 +29,13 @@
     ]
    [else
     (display "else case\n")
-    (cons '() (create-bindings (cdr l1) (cdr l2) )  )
+    (create-bindings (cdr l1) (cdr l2) )
    ]
    )
   )
 
 (define (match-eval x y)
+  (display "match-eval")
   (cond 
   [(equal? x y) 
    (display `(x and y are equal: ,x))
@@ -44,9 +45,22 @@
   [else
    (list `(if % ,(car x) ,(car y)) )
    ]
-)
+  )
   )
 
+(define (match-eval2 x y)
+  (display "match-eval")
+  (cond
+   [(equal? x y)
+    (display `(x and y are equal: ,x))
+    (display "\n")
+    x
+    ]
+   [else
+    `(if % ,x ,y)
+    ]
+   )
+  )
 
 (define (match-var a b)
   (display `(a = ,a))
@@ -97,21 +111,115 @@
    )
   )
 
+;https://stackoverflow.com/questions/15479490/member-function-in-racket
+(define (member? item seq)
+  (sequence-ormap (lambda (x)
+		    (equal? item x))
+		  seq))
+
+(define (is-input-in-mapping a mappings)
+  (display `(a is : ,a))
+  (display "\n")
+  (display `(mappings is : ,mappings))
+  (display "\n")
+  (cond
+   [(equal? mappings '())
+    (display "finished looking through mappings\n")
+    '()
+    ]
+   [(member? a (car mappings))
+    (display "is a member\n")
+ ;   (car
+     (cdr (car mappings))
+;     )
+    ]
+   [else
+    (display "looking through next mapping\n")
+    (is-input-in-mapping a (cdr mappings) )
+    ]
+   )
+  )
+
+
+(define (iterate-thru-body l1 l2  mappings)
+  (display "i've entered interate-thru-body\n")
+  (display `(l1: ,l1 ) )
+  (display "\n")
+  (display `(l2: ,l2 ) )
+  (display "\n")
+  (cond
+   [(or (equal? l1 '()) (equal? l2 '()))
+    (display "finished iterating through bodies\n")
+    '()
+    ]
+   [else
+    (display "still iterating thru body\n")
+    (cond
+     [(equal? (assoc (car l1) mappings) #f) ;we didn't find it in the map
+      (display "we didn't find it in the map\n")
+      (display `(l1 here: ,(car l1)))
+      (display "\n")
+      (display `(l2 here: ,(car l2)))
+      (display "\n")
+      (cons 
+       (match-eval2 (car l1) (car l2))
+       (iterate-thru-body (cdr l1) (cdr l2) mappings) 
+       )
+      ]
+     [else ;we found it in the map
+      (display "we foudn it in the map \n")
+      (cons 
+       (assoc (car l1) mappings)
+       (iterate-thru-body (cdr l1) (cdr l2) mappings)
+       )
+      ]
+     
+     )
+    ]
+  )
+  )
+
+(define (func-body l1 l2 mappings)
+  (display "ive entered func body\n")
+  (display `(l1 is actually: ,l1))
+  (display "\n")
+  (display `(l2 is actually: ,l2))
+  (display "\n")
+
+  (cond
+   [(not (list? l1))
+    (display "it's not a list\n")
+    (cond
+     [(equal? (assoc l1 mappings) #f )
+      (display "we didn't find it")
+      (match-eval l1 l2)
+      ]
+     [else ;we found it in the map 
+      (display "we found it in the map\n")
+      (car (cdr (assoc l1 mappings) ))
+      ]
+     )
+    ]
+   [
+    (display "is a list\n")
+    (iterate-thru-body l1 l2 mappings)
+   ]
+  )
+  )
+
 (define (let-inside l1 l2)
-;  (display (car l1))
-;  (display "\n")
-					;  (display (car l2))
   (display `(look at my bindings: ,(create-bindings (car l1) (car l2))) )
   (display "\n")
-	   
   (list
    `let
    (def-inside (car l1) (car l2))
-   `()
+   (func-body
+    (car (cdr l1) )
+    (car (cdr l2) )
+    (create-bindings (car l1) (car l2))
     )
-;  (create-bindings (car l1) (car l2))
+    )
   )
-
 
 ;https://stackoverflow.com/questions/16720941/custom-function-for-length-of-a-list-in-scheme
 (define (list-length lst)
@@ -149,9 +257,7 @@
     (cond
      [(equal? (car x) 'let)
       (display "LET CASE HERE \n")
-;      (display
-       (let-inside (cdr x) (cdr y))
-;       )
+      (let-inside (cdr x) (cdr y))
 	      
       ]
      [else
@@ -221,7 +327,8 @@
 (assert (expr-compare '(quoth (a b)) '(quoth (a c))) '(quoth (a (if % b c))))
 (assert (expr-compare '(if x y z) '(if x z z)) '(if x (if % y z) z))
 (assert (expr-compare '(if x y z) '(g x y z)) '(if % (if x y z) (g x y z)))
-					;(assert (expr-compare '(let ((a 1)) (f a)) '(let ((a 2)) (g a))) '(let ((a (if % 1 2))) ((if % f g) a)))
+(assert (expr-compare '(let ((a 1)) (f a)) '(let ((a 2)) (g a))) '(let ((a (if % 1 2))) ((if % f g) a)))
+(assert (expr-compare '(let ((a c)) a) '(let ((b d)) b)) '(let ((a!b (if % c d))) a!b))
 (assert (expr-compare ''(let ((a c)) a) ''(let ((b d)) b)) '(if % '(let ((a c)) a) '(let ((b d)) b)))
 
 					;)
