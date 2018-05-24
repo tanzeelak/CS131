@@ -2,8 +2,6 @@
   (cond
    [(and (equal? l1 '()) (equal? l2 '()) )
     (display "im empty\n")
-;    (display l1)
-;    (display l2)
     '()
     ] 
    [(not(equal? (car (car l1)) (car (car l2)) ) )
@@ -12,13 +10,6 @@
     (display "\n")
     (display (car l2))
     (display "\n")
- ;   (display (string->symbol
-;     (string-append
-;      (symbol->string (car (car l1) ) )
-;      "!"
-;      (symbol->string (car (car l2) ) ) ) ) )
-    (display "\nI finishied displaying\n")
-
     (cons 
      (string->symbol
       (string-append
@@ -29,11 +20,14 @@
      )
     ]
    [else
-    (cons '() (create-bindings (cdr l1) (cdr l2) )  )
     (display "else case\n")
+    (cons '() (create-bindings (cdr l1) (cdr l2) )  )
    ]
    )
   )
+
+
+
 
 ;https://stackoverflow.com/questions/16720941/custom-function-for-length-of-a-list-in-scheme
 (define (list-length lst)
