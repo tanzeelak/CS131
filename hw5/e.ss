@@ -1,13 +1,37 @@
 (define (create-bindings l1 l2)
   (cond
-   [(not(equal? (car l1) (car l2)))
-    (display "about to bind") ;about to bind
+   [(and (equal? l1 '()) (equal? l2 '()) )
+    (display "im empty\n")
+;    (display l1)
+;    (display l2)
+    '()
+    ] 
+   [(not(equal? (car (car l1)) (car (car l2)) ) )
     (display "about to bind\n") ;about to bind
     (display (car l1))
     (display "\n")
     (display (car l2))
-        (display "\n")
+    (display "\n")
+ ;   (display (string->symbol
+;     (string-append
+;      (symbol->string (car (car l1) ) )
+;      "!"
+;      (symbol->string (car (car l2) ) ) ) ) )
+    (display "\nI finishied displaying\n")
+
+    (cons 
+     (string->symbol
+      (string-append
+       (symbol->string (car (car l1) ) )
+       "!"
+       (symbol->string (car (car l2) ) ) ) )
+     (create-bindings (cdr l1) (cdr l2) )
+     )
     ]
+   [else
+    (cons '() (create-bindings (cdr l1) (cdr l2) )  )
+    (display "else case\n")
+   ]
    )
   )
 
@@ -40,8 +64,10 @@
     (cond
      [(equal? (car x) 'let)
       (display "LET CASE HERE \n")
-
-      (create-bindings (car (cdr x)) (car (cdr y))) ;want second element of list and pass
+;      (display `( (car (cdr x)) = ,(car (cdr x))) )
+;      (display `( (car (cdr y)) = ,(car (cdr y))) )
+      (display (create-bindings (car (cdr x)) (car (cdr y))) )
+      ;(display (create-bindings (car (cdr x)) (car (cdr y)))) ;want second element of list and pass
       ]
      [else
       (cons (car x) (compare-list (cdr x) (cdr y)) )
@@ -110,6 +136,7 @@
 (assert (expr-compare '(quoth (a b)) '(quoth (a c))) '(quoth (a (if % b c))))
 (assert (expr-compare '(if x y z) '(if x z z)) '(if x (if % y z) z))
 (assert (expr-compare '(if x y z) '(g x y z)) '(if % (if x y z) (g x y z)))
-;(assert (expr-compare '(let ((a 1)) (f a)) '(let ((a 2)) (g a))) '(let ((a (if % 1 2))) ((if % f g) a)))
+					;(assert (expr-compare '(let ((a 1)) (f a)) '(let ((a 2)) (g a))) '(let ((a (if % 1 2))) ((if % f g) a)))
+(assert (expr-compare ''(let ((a c)) a) ''(let ((b d)) b)) '(if % '(let ((a c)) a) '(let ((b d)) b)))
 
 					;)
