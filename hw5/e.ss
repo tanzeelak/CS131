@@ -1,3 +1,4 @@
+
 (define (create-bindings l1 l2)
   (cond
    [(and (equal? l1 '()) (equal? l2 '()) )
@@ -6,10 +7,6 @@
     ] 
    [(not(equal? (car (car l1)) (car (car l2)) ) )
     (display "about to bind\n") ;about to bind
-    (display (car l1))
-    (display "\n")
-    (display (car l2))
-    (display "\n")
     (cons 
      (string->symbol
       (string-append
@@ -26,7 +23,82 @@
    )
   )
 
+(define (match-eval x y)
+  (cond 
+  [(equal? x y) 
+   (display `(x and y are equal: ,x))
+   (display "\n")
+   x
+   ]
+  [else
+   (list `(if % ,(car x) ,(car y)) )
+   ]
+)
+  )
 
+
+(define (match-var a b)
+  (display `(a = ,a))
+  (display "\n")
+  (display `(b = ,b))
+  (display "\n")
+  (cond
+   [(not (equal? a b ) )
+    (string->symbol
+     (string-append
+      (symbol->string a )
+      "!"
+             (symbol->string b ) ) )
+    ]
+   [else
+    a
+    ]
+   )
+  )
+
+(define (def-pair def1 def2)
+  (display `(def1 = ,def1))
+  (display "\n")
+  (display `(def2 = ,def2))
+  (display "\n")
+  (cons
+   (match-var (car def1) (car def2))
+   (match-eval (cdr def1) (cdr def2))
+   )
+  )
+
+(define (def-inside l1 l2)
+  (display `(def1 = ,l1))
+  (display "\n")
+  (display `(def2 = ,l2))
+  (display "\n")
+  (cond 
+   [(and (equal? l1 '()) (equal? l2 '()) )
+    `()
+    ]
+   [else
+   (cons 
+    (def-pair (car l1) (car l2))
+    (def-inside (cdr l1) (cdr l2))
+    )
+	
+    ]
+   )
+  )
+
+(define (let-inside l1 l2)
+  (display (car l1))
+  (display "\n")
+  (display (car l2))
+  (display "\n")
+	   
+  (list
+   `let
+   (def-inside (car l1) (car l2))
+   `()
+    )
+;  (create-bindings (car l1) (car l2))
+  )
 
 
 ;https://stackoverflow.com/questions/16720941/custom-function-for-length-of-a-list-in-scheme
@@ -52,16 +124,23 @@
 	)
     `(if % ,x ,y)
     ]
+   [(and (boolean? (car x) )(boolean? (car y)) ) ;x and y are booleans to take care of
+    (display "bools \n")
+    (cons
+     (if (car x) '% '(not %))
+     (compare-list (cdr x) (cdr y))
+     )
+    ]
    [(equal? (car x) (car y)) ;head elements are equal so we recurse
     (display `(head elements are equal: car x = ,(car x) AND car y = ,(car y)))
     (display "\n")
     (cond
      [(equal? (car x) 'let)
       (display "LET CASE HERE \n")
-;      (display `( (car (cdr x)) = ,(car (cdr x))) )
-;      (display `( (car (cdr y)) = ,(car (cdr y))) )
-      (display (create-bindings (car (cdr x)) (car (cdr y))) )
-      ;(display (create-bindings (car (cdr x)) (car (cdr y)))) ;want second element of list and pass
+;      (display
+       (let-inside (cdr x) (cdr y))
+;       )
+	      
       ]
      [else
       (cons (car x) (compare-list (cdr x) (cdr y)) )
