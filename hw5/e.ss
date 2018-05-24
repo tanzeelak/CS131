@@ -2,7 +2,11 @@
   (cond
    [(not(equal? (car l1) (car l2)))
     (display "about to bind") ;about to bind
-    
+    (display "about to bind\n") ;about to bind
+    (display (car l1))
+    (display "\n")
+    (display (car l2))
+        (display "\n")
     ]
    )
   )
