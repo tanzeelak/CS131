@@ -9,17 +9,12 @@
 (define (pair-input-and-binded doIRev a b)
   (list
    (cond
-    [(equal? doIRev #f)
-     a
-     ]
-    [else
-     b
-     ]    
+    [(equal? doIRev #f) a ]
+    [else b]    
     )
    (bind-vals a b)
    )
   )
-
 
 (define (create-bindings doIRev l1 l2)
   (cond
@@ -193,9 +188,8 @@
   )
 
 (define (let-inside l1 l2)
-  (display "HELLOOOO")
-  (display `(look at my bindings: ,(create-bindings #f (car l1) (car l2))) )
-  (display `(look at my bindings: ,(create-bindings #t (car l1) (car l2))) )
+  (display `(LOOK AT my bindings: ,(create-bindings #f (car l1) (car l2))) )
+  (display `(LOOK AT my bindings: ,(create-bindings #t (car l1) (car l2))) )
   (display "\n")
   (list
    `let
@@ -209,12 +203,38 @@
     )
   )
 
+(define (lambda-inside l1 l2)
+;  (display `(LOOK AT my bindings: ,(create-bindings #f (car l1) (car l2))) )
+					;  (display `(LOOK AT my bindings: ,(create-bindings #t (car l1) (car l2))) )
+  (display `(def1 is: ,(car l1) ))
+  (display "\n")
+  (display `(def2 is: ,(car l2) ))
+  (display "\n we about to display the def pair OF L am e dDA \n")
+  (display (def-pair (car l1) (car l2) ) )
+  (display "\n above was the res of lamab DEAAAAA\n")
+  (list
+   `lambda
+   (def-pair (car l1) (car l2))
+   `()
+;   (func-body
+;    (car (cdr l1) )
+;    (car (cdr l2) )
+;    (create-bindings #f (car l1) (car l2))
+;    (create-bindings #t (car l1) (car l2))
+;    )
+   )
+  )
+
 ;https://stackoverflow.com/questions/16720941/custom-function-for-length-of-a-list-in-scheme
 (define (list-length lst)
   (cond ((null? lst) 0)
 	(else (+ 1 (list-length (cdr lst))))))
 
 (define (compare-list x y)
+  (display `(HEY THIS IS X ,x))
+  (display "\n")
+  (display `(HEY THIS IS Y ,y))
+  (display "\n")
   (cond
    [(or (equal? x '()) (equal? y '()) ) ;base case: two empty lists so we return one too
     (display `(empty: x = ,x y = ,y))
@@ -246,6 +266,12 @@
      [(equal? (car x) 'let)
       (display "LET CASE HERE \n")
       (let-inside (cdr x) (cdr y))
+      ] ;let case
+     [(equal? (car x) 'lambda)
+      (display "LAMBDA CASE HERE\n")
+      (display x)
+      (display y)
+      (lambda-inside (cdr x) (cdr y))
       ]
      [else
       (cons (car x) (compare-list (cdr x) (cdr y)) )
@@ -257,7 +283,7 @@
     (display "\n")
     (cons (expr-compare (car x) (car y)) (compare-list (cdr x) (cdr y) ))
     ]
-   [else
+   [else ;head elements are not equal
     (display `(head elements not equal: car x =  ,(car x) AND car y = ,(car y)))
     (display "\n")
     (cons `(if % ,(car x) ,(car y)) (compare-list (cdr x) (cdr y)) )
