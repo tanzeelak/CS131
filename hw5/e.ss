@@ -117,28 +117,26 @@
 		    (equal? item x))
 		  seq))
 
-(define (is-input-in-mapping a mappings)
-  (display `(a is : ,a))
-  (display "\n")
-  (display `(mappings is : ,mappings))
-  (display "\n")
-  (cond
-   [(equal? mappings '())
-    (display "finished looking through mappings\n")
-    '()
-    ]
-   [(member? a (car mappings))
-    (display "is a member\n")
- ;   (car
-     (cdr (car mappings))
-;     )
-    ]
-   [else
-    (display "looking through next mapping\n")
-    (is-input-in-mapping a (cdr mappings) )
-    ]
-   )
-  )
+;(define (is-input-in-mapping a mappings)
+;  (display `(a is : ,a))
+;  (display "\n")
+;  (display `(mappings is : ,mappings))
+;  (display "\n")
+;  (cond
+;   [(equal? mappings '())
+;    (display "finished looking through mappings\n")
+;    '()
+;    ]
+;   [(member? a (car mappings))
+;    (display "is a member\n")
+;     (cdr (car mappings))
+;    ]
+;   [else
+;    (display "looking through next mapping\n")
+;    (is-input-in-mapping a (cdr mappings) )
+;    ]
+;   )
+;  )
 
 
 (define (iterate-thru-body l1 l2  mappings)
@@ -168,8 +166,8 @@
       ]
      [else ;we found it in the map
       (display "we foudn it in the map \n")
-      (cons 
-       (assoc (car l1) mappings)
+      (cons
+       (car (cdr (assoc (car l1) mappings) ) )
        (iterate-thru-body (cdr l1) (cdr l2) mappings)
        )
       ]
@@ -330,5 +328,8 @@
 (assert (expr-compare '(let ((a 1)) (f a)) '(let ((a 2)) (g a))) '(let ((a (if % 1 2))) ((if % f g) a)))
 (assert (expr-compare '(let ((a c)) a) '(let ((b d)) b)) '(let ((a!b (if % c d))) a!b))
 (assert (expr-compare ''(let ((a c)) a) ''(let ((b d)) b)) '(if % '(let ((a c)) a) '(let ((b d)) b)))
-
+(assert (expr-compare '(+ #f (let ((a 1) (b 2)) (f a b)))
+		      '(+ #t (let ((a 1) (c 2)) (f a c)))) '(+
+							     (not %)
+							          (let ((a 1) (b!c 2)) (f a b!c))))
 					;)
