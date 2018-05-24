@@ -1,3 +1,18 @@
+(define (bind-vals a b) 
+  (string->symbol
+   (string-append
+    (symbol->string a )
+    "!"
+           (symbol->string b ) ) )
+  )
+
+(define (pair-input-and-binded a b)
+  (list
+   a
+   (bind-vals a b)
+   )
+  )
+
 
 (define (create-bindings l1 l2)
   (cond
@@ -7,12 +22,8 @@
     ] 
    [(not(equal? (car (car l1)) (car (car l2)) ) )
     (display "about to bind\n") ;about to bind
-    (cons 
-     (string->symbol
-      (string-append
-       (symbol->string (car (car l1) ) )
-       "!"
-       (symbol->string (car (car l2) ) ) ) )
+    (cons
+     (pair-input-and-binded (car (car l1)) (car (car l2)))
      (create-bindings (cdr l1) (cdr l2) )
      )
     ]
@@ -87,9 +98,10 @@
   )
 
 (define (let-inside l1 l2)
-  (display (car l1))
-  (display "\n")
-  (display (car l2))
+;  (display (car l1))
+;  (display "\n")
+					;  (display (car l2))
+  (display `(look at my bindings: ,(create-bindings (car l1) (car l2))) )
   (display "\n")
 	   
   (list
