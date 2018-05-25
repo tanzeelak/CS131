@@ -71,10 +71,10 @@
   (display "match-eval\n")
   (display `(x = ,(car x) y = ,(car y)) )
   (cond 
-  [(equal? (car x) (car y)) 
- ;  (display `(x and y are equal: ,x))
- ;  (display "\n")
-   x
+  [(equal? (car x) (car y)) x]
+  [(or (list? (car x)) (list? (car y)))
+   (display "\n One OF THESE IS ALIST\n")
+   (compare-list (car x) (car y))
    ]
   [else
    (list `(if % ,(car x) ,(car y)) )
@@ -85,11 +85,11 @@
 (define (match-eval2 x y)
   (display "match-eval2")
   (cond
-   [(equal? x y)
-;    (display `(x and y are equal: ,x))
-;    (display "\n")
-    x
-    ]
+   [(equal? x y) x]
+;   [(or (list? x) (list? y))
+;    (display "\n YO LAMBDA HAS  LIST BOI IN THE PAIR\n")
+;    (compare-list x y)
+;    ]
    [else
     `(if % ,x ,y)
     ]
@@ -298,7 +298,7 @@
       (display (cdr (assoc (car l1) mappings1)))
       (display "\n")
       (cons 
-       (cdr (assoc (car l1) mappings1))
+       (car (cdr (assoc (car l1) mappings1)) )
        (func-body2 (cdr l1) (cdr l2) mappings1 mappings2)
        )
       ]
