@@ -87,7 +87,7 @@
    )
   )
 
-(define (def-pair def1 def2)
+(define (def-pair islambda def1 def2)
   (display `(def1 = ,def1))
   (display "\n")
   (display `(def2 = ,def2))
@@ -109,7 +109,7 @@
     ]
    [else
    (cons 
-    (def-pair (car l1) (car l2))
+    (def-pair #f (car l1) (car l2))
     (def-inside (cdr l1) (cdr l2))
     )
     ]
@@ -220,7 +220,7 @@
   (display "\n FUNC BODS ABOVE ME \n")
   (list
    `lambda
-   (def-pair (car l1) (car l2))
+   (def-pair #t (car l1) (car l2))
    (func-body
     (car (cdr l1))
     (car (cdr l2))
@@ -351,5 +351,9 @@
 (assert (expr-compare '(+ #f (let ((a 1) (b 2)) (f a b)))
 		      '(+ #t (let ((a 1) (c 2)) (f a c)))) '(+
 							     (not %)
-							          (let ((a 1) (b!c 2)) (f a b!c))))
+							     (let ((a 1) (b!c 2)) (f a b!c))))
+(assert (expr-compare '((lambda (a) (f a)) 1) '((lambda (a) (g a)) 2)) '((lambda (a) ((if % f g) a)) (if % 1 2)))
+(assert (expr-compare '((lambda (a b) (f a b)) 1 2)
+		      '((lambda (a b) (f b a)) 1 2))
+	'((lambda (a b) (f (if % a b) (if % b a))) 1 2))
 					;)
