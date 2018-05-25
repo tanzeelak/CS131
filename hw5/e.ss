@@ -121,19 +121,28 @@
   (display "\n")
   (cons
    (match-var (car def1) (car def2))
-   (cond
-    [(equal? islambda #f)
-     (match-eval (cdr def1) (cdr def2))
-     ]
-    [else
-     (display "def-pair BITTEAVHCH\n")
-     (display `((cdr def1) = ,(cdr def1)))
-     (display "\n")
-     (display `((cdr def2) = ,(cdr def2)))
-     (display "\n")
-     (match-var (cdr def1) (cdr def2))
-     ]
-    )
+   (match-eval (cdr def1) (cdr def2))
+   )
+  )
+
+(define (def-pair2  def1 def2)
+  (display "DEF-PAIR2\n")
+  (display `(def1 = ,def1))
+  (display "\n")
+  (display `(def2 = ,def2))
+  (display "\n")
+  (cond
+   [(equal? def1 '())
+    (display "it is empty\n")
+    `()
+    ]
+   [else
+    (display "else in def pair\n")
+    (cons
+     (match-var (car def1) (car def2))
+     (def-pair2 (cdr def1) (cdr def2))
+     )
+    ]
    )
   )
 
@@ -204,7 +213,10 @@
   (display "\n")
   (display `(l2 is actually: ,l2))
   (display "\n")
-
+  (display `(mappings1: ,mappings1))
+  (display "\n")
+  (display `(mappings2: ,mappings2))
+  (display "\n")
   (cond
    [(not (list? l1))
     (display "it's not a list\n")
@@ -214,7 +226,7 @@
       (match-eval l1 l2)
       ]
      [(equal? (cdr (assoc l1 mappings1)) (cdr (assoc l2 mappings2)))
-      (display "we found it in the map\n")
+      (display "we found it in the map and they match\n")
       (car (cdr (assoc l1 mappings1) ))
       ]
      [(not (equal? (cdr (assoc l1 mappings1)) (cdr (assoc l2 mappings2)) ) )
@@ -259,7 +271,7 @@
   (display "\n FUNC BODS ABOVE ME \n")
   (list
    `lambda
-   (def-pair #t (car l1) (car l2))
+   (def-pair2 (car l1) (car l2))
    (func-body
     (car (cdr l1))
     (car (cdr l2))
