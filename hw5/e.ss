@@ -17,6 +17,10 @@
   )
 
 (define (create-bindings doIRev l1 l2)
+  (display "CREATE BINDINGS\n")
+  (display l1)
+  (display l2)
+  (display "\n")
   (cond
    [(and (equal? l1 '()) (equal? l2 '()) )
     (display "im empty\n")
@@ -37,7 +41,7 @@
   )
 
 (define (match-eval x y)
-  (display "match-eval")
+  (display "match-eval\n")
   (cond 
   [(equal? x y) 
    (display `(x and y are equal: ,x))
@@ -191,6 +195,10 @@
   (display `(LOOK AT my bindings: ,(create-bindings #f (car l1) (car l2))) )
   (display `(LOOK AT my bindings: ,(create-bindings #t (car l1) (car l2))) )
   (display "\n")
+  (display `(funcbod1 is: ,(car l1)) )
+  (display "\n")
+  (display `(funcbod2 is: ,(car l2)) )
+  (display "\n FUNC BODS ABOVE ME \n")
   (list
    `let
    (def-inside (car l1) (car l2))
@@ -204,24 +212,21 @@
   )
 
 (define (lambda-inside l1 l2)
-;  (display `(LOOK AT my bindings: ,(create-bindings #f (car l1) (car l2))) )
-					;  (display `(LOOK AT my bindings: ,(create-bindings #t (car l1) (car l2))) )
-  (display `(def1 is: ,(car l1) ))
+  (display `(LOOK AT my bindings: ,(create-bindings #f (list (car l1)) (list (car l2)))) )
+  (display `(LOOK AT my bindings: ,(create-bindings #t (list (car l1)) (list (car l2)))) )
+  (display `(def1 is: ,(car l1)) )
   (display "\n")
-  (display `(def2 is: ,(car l2) ))
-  (display "\n we about to display the def pair OF L am e dDA \n")
-  (display (def-pair (car l1) (car l2) ) )
-  (display "\n above was the res of lamab DEAAAAA\n")
+  (display `(def2 is: ,(car l2)) )
+  (display "\n FUNC BODS ABOVE ME \n")
   (list
    `lambda
    (def-pair (car l1) (car l2))
-   `()
-;   (func-body
-;    (car (cdr l1) )
-;    (car (cdr l2) )
-;    (create-bindings #f (car l1) (car l2))
-;    (create-bindings #t (car l1) (car l2))
-;    )
+   (func-body
+    (car (cdr l1))
+    (car (cdr l2))
+    (create-bindings #f (list (car l1)) (list (car l2)))
+    (create-bindings #t (list (car l1)) (list (car l2)))
+    )
    )
   )
 
