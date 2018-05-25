@@ -484,11 +484,20 @@
 	(display "  Result: ") (displayln output)
 	    (display "Expected: ") (displayln expected)))
 
+; basically does the reverse.
+; checks the equality of x and when expr-compare is forced to evaluate to true whenever a % is seen
+; checks the equality of y and when expr-compare is forced to evaluate to false whenever a % is seen
+; both of these must be equal to result in true
 (define (test-expr-compare x y)
   (and (equal? (eval x) (eval (list 'let '((% #t)) (expr-compare x y)) ) )
        (equal? (eval y) (eval (list 'let '((% #f)) (expr-compare x y)) ) )
        )
   )
+
+; to test: (expr-compare test-expr-x test-expr-y) 
+(define test-expr-x '((lambda (a b) (f a b)) 1 2))
+(define test-expr-y '((lambda (a c) (f c a)) 1 2))
+
 
 ;(define (tests) 
 (assert (expr-compare 12 12) 12)
