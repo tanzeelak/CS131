@@ -242,6 +242,79 @@
   )
   )
 
+(define (func-body2 l1 l2 mappings1 mappings2)
+  (display "ive entered func body\n")
+  (display `(l1 is actually: ,l1))
+  (display "\n")
+  (display `(l2 is actually: ,l2))
+  (display "\n")
+  (display `(mappings1: ,mappings1))
+  (display "\n")
+  (display `(mappings2: ,mappings2))
+  (display "\n")
+  (cond
+   [(or (equal? l1 '()) (equal? l2 '()) )
+    (display "\n we've reached an empty lsit\n")
+    '()
+    ]
+   [(or (equal? (assoc (car l1) mappings1) #f) (equal? (assoc (car l2) mappings2) #f))
+    (display "\n one was not found in the map\n")
+    (display `( car l1 = ,(car l1) car l2 = ,(car l2)))
+    (display "\n")
+    (display `(carl l1 mapping =  ,(assoc (car l1) mappings1) car l2 mapping =  ,(assoc (car l2) mappings2) ))
+    (display "\n")
+    (cond
+     [(and (equal? (assoc (car l1) mappings1) #f) (equal? (assoc (car l2) mappings2) #f))
+      (display "\n neither was found in the map\n")
+      (cons 
+       (match-eval2 (car l1) (car l2))
+       (func-body2 (cdr l1) (cdr l2) mappings1 mappings2)
+       )
+      ]
+     [(not (assoc (car l1) mappings1))
+      (display "\nthe first was not found in the map\n")
+      (cons
+       (match-eval2 (car l1) (car (cdr (assoc (car l2) mappings2))))
+       (func-body2 (cdr l1) (cdr l2) mappings1 mappings2)
+       )
+      ]
+     [(not (assoc (car l2) mappings2))
+      (display "the second was not found in the map\n")
+      (cons
+       (match-eval2 (car (cdr (assoc (car l1) mappings1))) (car l2))
+       (func-body2 (cdr l1) (cdr l2) mappings1 mappings2)
+       )
+      ]
+     )
+    ]
+   [(and (assoc (car l1) mappings1) (assoc (car l2) mappings2))
+    (display "both were in the map\n")
+    (cond
+     [(equal? (cdr (assoc (car l1) mappings1)) (cdr (assoc (car l2) mappings2)))
+      (display "they are mapped to the same value, so we return that value\n")
+      (display (cdr (assoc (car l1) mappings1)))
+      (display "\n")
+      (cons 
+       (cdr (assoc (car l1) mappings1))
+       (func-body2 (cdr l1) (cdr l2) mappings1 mappings2)
+       )
+      ]
+     [(not (equal? (cdr (assoc (car l1) mappings1)) (cdr (assoc (car l2) mappings2))))
+      (display "they are not mapped to the same value so we gotta do percento on that mapping")
+      (display (cdr (assoc (car l1) mappings1)))
+      (display "\n")
+      (display (cdr (assoc (car l2) mappings2)))
+      (display "\n")
+      (cons
+       (match-eval2 (cdr (assoc (car l1) mappings1)) (cdr (assoc (car l2) mappings2)) )
+       (func-body2 (cdr l1) (cdr l2) mappings1 mappings2)
+       )
+      ]
+     )
+    ]
+   )
+  )
+
 (define (let-inside l1 l2)
   (display `(LOOK AT my bindings: ,(create-bindings #f (car l1) (car l2))) )
   (display `(LOOK AT my bindings: ,(create-bindings #t (car l1) (car l2))) )
@@ -272,7 +345,7 @@
   (list
    `lambda
    (def-pair2 (car l1) (car l2))
-   (func-body
+   (func-body2
     (car (cdr l1))
     (car (cdr l2))
     (create-bindings2 #f (car l1) (car l2))
@@ -407,4 +480,8 @@
 (assert (expr-compare '((lambda (a b) (f a b)) 1 2)
 		      '((lambda (a b) (f b a)) 1 2))
 	'((lambda (a b) (f (if % a b) (if % b a))) 1 2))
+(assert (expr-compare '((lambda (a b) (f a b)) 1 2)
+		      '((lambda (a c) (f c a)) 1 2))
+	'((lambda (a b!c) (f (if % a b!c) (if % b!c a)))
+	       1 2))
 					;)
