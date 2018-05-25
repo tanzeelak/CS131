@@ -484,6 +484,12 @@
 	(display "  Result: ") (displayln output)
 	    (display "Expected: ") (displayln expected)))
 
+(define (test-expr-compare x y)
+  (and (equal? (eval x) (eval (list 'let '((% #t)) (expr-compare x y)) ) )
+       (equal? (eval y) (eval (list 'let '((% #f)) (expr-compare x y)) ) )
+       )
+  )
+
 ;(define (tests) 
 (assert (expr-compare 12 12) 12)
 (assert (expr-compare 12 20) `(if % 12 20))
