@@ -40,12 +40,38 @@
    )
   )
 
+(define (create-bindings2 doIRev l1 l2)
+  (display "CREATE BINDINGS\n")
+  (display l1)
+  (display l2)
+  (display "\n")
+  (cond
+   [(and (equal? l1 '()) (equal? l2 '()) )
+    (display "im empty\n")
+    '()
+    ]
+   [(not(equal? (car l1) (car l2) ) )
+    (display "about to bind\n") ;about to bind
+    (cons
+     (pair-input-and-binded doIRev (car l1) (car l2))
+     (create-bindings2 doIRev (cdr l1) (cdr l2) )
+     )
+    ]
+   [else
+    (display "else case\n")
+    (create-bindings2 doIRev (cdr l1) (cdr l2) )
+    ]
+   )
+  )
+
+
+
 (define (match-eval x y)
   (display "match-eval\n")
   (cond 
   [(equal? x y) 
-   (display `(x and y are equal: ,x))
-   (display "\n")
+ ;  (display `(x and y are equal: ,x))
+ ;  (display "\n")
    x
    ]
   [else
@@ -55,11 +81,11 @@
   )
 
 (define (match-eval2 x y)
-  (display "match-eval")
+  (display "match-eval2")
   (cond
    [(equal? x y)
-    (display `(x and y are equal: ,x))
-    (display "\n")
+;    (display `(x and y are equal: ,x))
+;    (display "\n")
     x
     ]
    [else
@@ -69,6 +95,7 @@
   )
 
 (define (match-var a b)
+  (display "match-var\n")
   (display `(a = ,a))
   (display "\n")
   (display `(b = ,b))
@@ -99,11 +126,12 @@
      (match-eval (cdr def1) (cdr def2))
      ]
     [else
+     (display "def-pair BITTEAVHCH\n")
      (display `((cdr def1) = ,(cdr def1)))
      (display "\n")
-     (display '((cdr def2) =  ,(cdr def2)))
+     (display `((cdr def2) = ,(cdr def2)))
      (display "\n")
-;     (match-var (cdr def1) (cdr def2))
+     (match-var (cdr def1) (cdr def2))
      ]
     )
    )
@@ -223,8 +251,8 @@
   )
 
 (define (lambda-inside l1 l2)
-  (display `(LOOK AT my bindings: ,(create-bindings #f (list (car l1)) (list (car l2)))) )
-  (display `(LOOK AT my bindings: ,(create-bindings #t (list (car l1)) (list (car l2)))) )
+  (display `(LOOK AT my bindings: ,(create-bindings2 #f (car l1) (car l2))) )
+  (display `(LOOK AT my bindings: ,(create-bindings2 #t (car l1) (car l2))) )
   (display `(def1 is: ,(car l1)) )
   (display "\n")
   (display `(def2 is: ,(car l2)) )
@@ -235,8 +263,8 @@
    (func-body
     (car (cdr l1))
     (car (cdr l2))
-    (create-bindings #f (list (car l1)) (list (car l2)))
-    (create-bindings #t (list (car l1)) (list (car l2)))
+    (create-bindings2 #f (car l1) (car l2))
+    (create-bindings2 #t (car l1) (car l2))
     )
    )
   )
@@ -247,10 +275,10 @@
 	(else (+ 1 (list-length (cdr lst))))))
 
 (define (compare-list x y)
-  (display `(HEY THIS IS X ,x))
-  (display "\n")
-  (display `(HEY THIS IS Y ,y))
-  (display "\n")
+;  (display `(HEY THIS IS X ,x))
+;  (display "\n")
+;  (display `(HEY THIS IS Y ,y))
+;  (display "\n")
   (cond
    [(or (equal? x '()) (equal? y '()) ) ;base case: two empty lists so we return one too
     (display `(empty: x = ,x y = ,y))
@@ -285,8 +313,8 @@
       ] ;let case
      [(equal? (car x) 'lambda)
       (display "LAMBDA CASE HERE\n")
-      (display x)
-      (display y)
+ ;     (display x)
+;      (display y)
       (lambda-inside (cdr x) (cdr y))
       ]
      [else
@@ -295,8 +323,8 @@
      )
     ]
    [(or (list? (car x) ) (list? (car y) ) )  ;if list of lists
-    (display `(list of lists: car x = ,(car x) AND car y = ,(car y)))
-    (display "\n")
+;    (display `(list of lists: car x = ,(car x) AND car y = ,(car y)))
+;    (display "\n")
     (cons (expr-compare (car x) (car y)) (compare-list (cdr x) (cdr y) ))
     ]
    [else ;head elements are not equal
@@ -310,21 +338,21 @@
 (define (expr-compare x y)
   (cond
    [(equal? x y) ;base case: x and y are sole equal elements
-    (display `(x and y are equal: ,x))
-    (display "\n")
+;    (display `(x and y are equal: ,x))
+;    (display "\n")
     x
     ]
    [(and (boolean? x)(boolean? y)) ;x and y are booleans to take care of
-    (display "x and y are boolsz \n")
+;    (display "x and y are boolsz \n")
     (if x '% '(not %))
     ]
    [(not (and (list? x) (list? y) ) ) ;x or y is a list but not both so we return the if case
-    (display "one is not a list \n")
+;    (display "one is not a list \n")
     `(if % ,x ,y)
     ]
    [(and (list? x)(list? y)) ;x and y are both lists so we compare
-    (display `(compare lists: ,x AND ,y))
-    (display "\n")
+;    (display `(compare lists: ,x AND ,y))
+;    (display "\n")
     (compare-list x y)
     ]
    )
