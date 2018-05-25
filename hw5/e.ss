@@ -94,7 +94,18 @@
   (display "\n")
   (cons
    (match-var (car def1) (car def2))
-   (match-eval (cdr def1) (cdr def2))
+   (cond
+    [(equal? islambda #f)
+     (match-eval (cdr def1) (cdr def2))
+     ]
+    [else
+     (display `((cdr def1) = ,(cdr def1)))
+     (display "\n")
+     (display '((cdr def2) =  ,(cdr def2)))
+     (display "\n")
+;     (match-var (cdr def1) (cdr def2))
+     ]
+    )
    )
   )
 
