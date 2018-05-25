@@ -82,14 +82,41 @@
   )
   )
 
+(define (handle-list-calls x y)
+  (display "handle-list-calls\n")
+  (display `(x = ,x))
+  (display "\n")
+  (display `(y = ,y))
+  (display "\n")
+  (cond
+   [(or (equal? x '() ) (equal? y '() ) )
+    '()
+    ]
+   [(or (list? x) (list? y))
+    (cond
+     [(or (list? (car x)) (list? (car y)) )
+      (display "list of lists\n")
+      (handle-list-calls (car x) (car y))
+      ]
+     [else
+      (display "this is the final list\n")
+      (compare-list x y)
+      ]
+     )
+    ]
+   )
+  )
+
 (define (match-eval2 x y)
-  (display "match-eval2")
+  (display "match-eval2\n")
+  (display `(x = ,x y = ,y))
+  (display "\n")
   (cond
    [(equal? x y) x]
-;   [(or (list? x) (list? y))
-;    (display "\n YO LAMBDA HAS  LIST BOI IN THE PAIR\n")
-;    (compare-list x y)
-;    ]
+   [(or (list? x) (list? y)) ;comment this out if it fails in the final
+    (display "\n YO LAMBDA HAS  LIST BOI IN THE PAIR\n")
+    (handle-list-calls x y)
+    ]
    [else
     `(if % ,x ,y)
     ]
@@ -187,7 +214,7 @@
    [else
     (display "still iterating thru body\n")
     (cond
-     [(equal? (assoc (car l1) mappings1) #f) ;we didn't find it in the map
+     [(equal? (assoc (car l1) mappings1) #f) 
       (display "we didn't find it in the map\n")
       (display `(l1 here: ,(car l1)))
       (display "\n")
@@ -198,7 +225,7 @@
        (iterate-thru-body (cdr l1) (cdr l2) mappings1 mappings2) 
        )
       ]
-     [else ;we found it in the map
+     [else 
       (display "we foudn it in the map \n")
       (cons
        (car (cdr (assoc (car l1) mappings1) ) )
@@ -259,6 +286,10 @@
    [(or (equal? l1 '()) (equal? l2 '()) )
     (display "\n we've reached an empty lsit\n")
     '()
+    ]
+   [(or (equal? (car l1) 'let) (equal? (car l1) 'lambda) )
+    (display "\n WE FOUND A FUKCIN LET INSIDE THE BODY\n")
+    (compare-list l1 l2)
     ]
    [(or (equal? (assoc (car l1) mappings1) #f) (equal? (assoc (car l2) mappings2) #f))
     (display "\n one was not found in the map\n")
@@ -341,9 +372,10 @@
 (define (lambda-inside l1 l2)
   (display `(LOOK AT my bindings: ,(create-bindings2 #f (car l1) (car l2))) )
   (display `(LOOK AT my bindings: ,(create-bindings2 #t (car l1) (car l2))) )
-  (display `(def1 is: ,(car l1)) )
   (display "\n")
-  (display `(def2 is: ,(car l2)) )
+  (display `(def1 is: ,(cdr l1)) )
+  (display "\n")
+  (display `(def2 is: ,(cdr l2)) )
   (display "\n FUNC BODS ABOVE ME \n")
   (list
    `lambda
@@ -489,7 +521,15 @@
 	       1 2))
 					;)
 
-'(let (( a (lambda (b a) (b a)) ))
-   (eq? a ((lambda (a b) (let ((a b) (b a)) (a b)))
-	   a (lambda (a) a)) )
+'(let
+     (( a (lambda (b a) (b a)) ))
+   (eq? a
+	(
+	 (lambda (a b)
+	   (let ((a b) (b a)) (a b))
+		 )
+	 a
+	 (lambda (a) a)
+	 )
+	)
    )
