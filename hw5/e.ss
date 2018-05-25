@@ -25,9 +25,9 @@
    [(and (equal? l1 '()) (equal? l2 '()) )
     (display "im empty\n")
     '()
-    ] 
+    ]
    [(not(equal? (car (car l1)) (car (car l2)) ) )
-    (display "about to bind\n") ;about to bind
+    (display "about to bind\n")
     (cons
      (pair-input-and-binded doIRev (car (car l1)) (car (car l2)))
      (create-bindings doIRev (cdr l1) (cdr l2) )
@@ -35,13 +35,16 @@
     ]
    [else
     (display "else case\n")
+    (display (cdr (car l1)))
+    (display (cdr (car l2)))
+    (display "\n")
     (create-bindings doIRev (cdr l1) (cdr l2) )
    ]
    )
   )
 
 (define (create-bindings2 doIRev l1 l2)
-  (display "CREATE BINDINGS\n")
+  (display "CREATE BINDINGS2\n")
   (display l1)
   (display l2)
   (display "\n")
@@ -51,7 +54,7 @@
     '()
     ]
    [(not(equal? (car l1) (car l2) ) )
-    (display "about to bind\n") ;about to bind
+    (display "about to bind\n")
     (cons
      (pair-input-and-binded doIRev (car l1) (car l2))
      (create-bindings2 doIRev (cdr l1) (cdr l2) )
@@ -64,12 +67,11 @@
    )
   )
 
-
-
 (define (match-eval x y)
   (display "match-eval\n")
+  (display `(x = ,(car x) y = ,(car y)) )
   (cond 
-  [(equal? x y) 
+  [(equal? (car x) (car y)) 
  ;  (display `(x and y are equal: ,x))
  ;  (display "\n")
    x
@@ -115,9 +117,10 @@
   )
 
 (define (def-pair islambda def1 def2)
-  (display `(def1 = ,def1))
+  (display "DEFPAIR\n")
+  (display `(def1 = ,(cdr def1)))
   (display "\n")
-  (display `(def2 = ,def2))
+  (display `(def2 = ,(cdr def2)))
   (display "\n")
   (cons
    (match-var (car def1) (car def2))
@@ -300,7 +303,7 @@
        )
       ]
      [(not (equal? (cdr (assoc (car l1) mappings1)) (cdr (assoc (car l2) mappings2))))
-      (display "they are not mapped to the same value so we gotta do percento on that mapping")
+      (display "they are not mapped to the same value so we gotta do percento on that mapping\n")
       (display (cdr (assoc (car l1) mappings1)))
       (display "\n")
       (display (cdr (assoc (car l2) mappings2)))
@@ -485,3 +488,8 @@
 	'((lambda (a b!c) (f (if % a b!c) (if % b!c a)))
 	       1 2))
 					;)
+
+'(let (( a (lambda (b a) (b a)) ))
+   (eq? a ((lambda (a b) (let ((a b) (b a)) (a b)))
+	   a (lambda (a) a)) )
+   )
