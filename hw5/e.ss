@@ -143,6 +143,34 @@
    )
   )
 
+
+(define (match-outer-var a b mappings1 mappings2)
+  (display "match-outer-var\n")
+  (display `(a = ,a))
+  (display "\n")
+  (display `(b = ,b))
+  (display "\n")
+  (cond
+   [(or (equal? (assoc a mappings1) #f) (equal? (assoc b mappings2) #f))
+    (cond
+     [(and (equal? (assoc a mappings1) #f) (equal? (assoc b mappings2) #f))
+      (display "neither val was found in teh map so we just bind\n")
+      (match-var a b)
+      ]
+     )
+    ]
+   [(or (not (equal? (assoc a mappings1) #f)) (not (equal? (assoc b mappings2) #f)))
+    (cond
+     [(equal? (cdr (assoc a mappings1)) (cdr (assoc b mappings2)) )
+      (display "they are mapped to the same val so we return that val\n")
+      (display (cdr (assoc a mappings1)))
+      ;;      (cdr (assoc a mappings1))
+      ]
+     )
+    ]
+   )
+  )
+
 (define (def-pair islambda def1 def2 mappings1 mappings2)
   (display "DEFPAIR\n")
   (display `(def1 = ,(cdr def1)))
