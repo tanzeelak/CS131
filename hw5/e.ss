@@ -67,7 +67,7 @@
    )
   )
 
-(define (match-eval x y)
+(define (match-eval x y mappings1 mappings2)
   (display "match-eval\n")
   (display `(x = ,(car x) y = ,(car y)) )
   (cond 
@@ -107,7 +107,7 @@
    )
   )
 
-(define (match-eval2 x y)
+(define (match-eval2 x y mappings1 mappings2)
   (display "match-eval2\n")
   (display `(x = ,x y = ,y))
   (display "\n")
@@ -143,7 +143,7 @@
    )
   )
 
-(define (def-pair islambda def1 def2)
+(define (def-pair islambda def1 def2 mappings1 mappings2)
   (display "DEFPAIR\n")
   (display `(def1 = ,(cdr def1)))
   (display "\n")
@@ -151,11 +151,11 @@
   (display "\n")
   (cons
    (match-var (car def1) (car def2))
-   (match-eval (cdr def1) (cdr def2))
+   (match-eval (cdr def1) (cdr def2) mappings1 mappings2)
    )
   )
 
-(define (def-pair2  def1 def2)
+(define (def-pair2  def1 def2 mappings1 mappings2)
   (display "DEF-PAIR2\n")
   (display `(def1 = ,def1))
   (display "\n")
@@ -170,13 +170,13 @@
     (display "else in def pair\n")
     (cons
      (match-var (car def1) (car def2))
-     (def-pair2 (cdr def1) (cdr def2))
+     (def-pair2 (cdr def1) (cdr def2) mappings1 mappings2)
      )
     ]
    )
   )
 
-(define (def-inside l1 l2)
+(define (def-inside l1 l2 mappings1 mappings2)
   (display `(def1 = ,l1))
   (display "\n")
   (display `(def2 = ,l2))
@@ -187,18 +187,12 @@
     ]
    [else
    (cons 
-    (def-pair #f (car l1) (car l2))
-    (def-inside (cdr l1) (cdr l2))
+    (def-pair #f (car l1) (car l2) mappings1 mappings2)
+    (def-inside (cdr l1) (cdr l2) mappings1 mappings2)
     )
     ]
    )
   )
-
-;https://stackoverflow.com/questions/15479490/member-function-in-racket
-(define (member? item seq)
-  (sequence-ormap (lambda (x)
-		    (equal? item x))
-		  seq))
 
 (define (iterate-thru-body l1 l2  mappings1 mappings2)
   (display "i've entered interate-thru-body\n")
@@ -221,7 +215,7 @@
       (display `(l2 here: ,(car l2)))
       (display "\n")
       (cons 
-       (match-eval2 (car l1) (car l2))
+       (match-eval2 (car l1) (car l2) mappings1 mappings2)
        (iterate-thru-body (cdr l1) (cdr l2) mappings1 mappings2) 
        )
       ]
@@ -289,7 +283,7 @@
     ]
    [(or (equal? (car l1) 'let) (equal? (car l1) 'lambda) )
     (display "\n WE FOUND A FUKCIN LET INSIDE THE BODY\n")
-    (compare-list l1 l2 '(()) '(()))
+    (compare-list l1 l2 mappings1 mappings2)
     ]
    [(or (equal? (assoc (car l1) mappings1) #f) (equal? (assoc (car l2) mappings2) #f))
     (display "\n one was not found in the map\n")
@@ -301,21 +295,21 @@
      [(and (equal? (assoc (car l1) mappings1) #f) (equal? (assoc (car l2) mappings2) #f))
       (display "\n neither was found in the map\n")
       (cons 
-       (match-eval2 (car l1) (car l2))
+       (match-eval2 (car l1) (car l2) mappings1 mappings2)
        (func-body2 (cdr l1) (cdr l2) mappings1 mappings2)
        )
       ]
      [(not (assoc (car l1) mappings1))
       (display "\nthe first was not found in the map\n")
       (cons
-       (match-eval2 (car l1) (car (cdr (assoc (car l2) mappings2))))
+       (match-eval2 (car l1) (car (cdr (assoc (car l2) mappings2))) mappings1 mappings2)
        (func-body2 (cdr l1) (cdr l2) mappings1 mappings2)
        )
       ]
      [(not (assoc (car l2) mappings2))
       (display "the second was not found in the map\n")
       (cons
-       (match-eval2 (car (cdr (assoc (car l1) mappings1))) (car l2))
+       (match-eval2 (car (cdr (assoc (car l1) mappings1))) (car l2) mappings1 mappings2)
        (func-body2 (cdr l1) (cdr l2) mappings1 mappings2)
        )
       ]
@@ -340,7 +334,7 @@
       (display (cdr (assoc (car l2) mappings2)))
       (display "\n")
       (cons
-       (match-eval2 (cdr (assoc (car l1) mappings1)) (cdr (assoc (car l2) mappings2)) )
+       (match-eval2 (cdr (assoc (car l1) mappings1)) (cdr (assoc (car l2) mappings2)) mappings1 mappings2)
        (func-body2 (cdr l1) (cdr l2) mappings1 mappings2)
        )
       ]
@@ -357,9 +351,10 @@
   (display "\n")
   (display `(funcbod2 is: ,l2) )
   (display "\n FUNC BODS ABOVE ME \n")
+  ;; may need to change
   (list
    `let
-   (def-inside (car l1) (car l2))
+   (def-inside (car l1) (car l2) pmap1 pmap2)
    (func-body
     (car (cdr l1) )
     (car (cdr l2) )
@@ -377,9 +372,10 @@
   (display "\n")
   (display `(def2 is: ,l2) )
   (display "\n FUNC BODS ABOVE ME \n")
+  ;; may need to change
   (list
    `lambda
-   (def-pair2 (car l1) (car l2))
+   (def-pair2 (car l1) (car l2) pmap1 pmap2)
    (func-body2
     (car (cdr l1))
     (car (cdr l2))
