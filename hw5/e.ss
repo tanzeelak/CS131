@@ -16,7 +16,7 @@
    )
   )
 
-(define (create-bindings doIRev l1 l2)
+(define (create-bindings doIRev l1 l2 pmap)
   (display "CREATE BINDINGS\n")
   (display l1)
   (display l2)
@@ -24,13 +24,13 @@
   (cond
    [(and (equal? l1 '()) (equal? l2 '()) )
     (display "im empty\n")
-    '()
+    (car pmap)
     ]
    [(not(equal? (car (car l1)) (car (car l2)) ) )
     (display "about to bind\n")
     (cons
      (pair-input-and-binded doIRev (car (car l1)) (car (car l2)))
-     (create-bindings doIRev (cdr l1) (cdr l2) )
+     (create-bindings doIRev (cdr l1) (cdr l2) pmap)
      )
     ]
    [else
@@ -38,12 +38,12 @@
     (display (cdr (car l1)))
     (display (cdr (car l2)))
     (display "\n")
-    (create-bindings doIRev (cdr l1) (cdr l2) )
+    (create-bindings doIRev (cdr l1) (cdr l2) pmap)
    ]
    )
   )
 
-(define (create-bindings2 doIRev l1 l2)
+(define (create-bindings2 doIRev l1 l2 pmap)
   (display "CREATE BINDINGS2\n")
   (display l1)
   (display l2)
@@ -51,18 +51,18 @@
   (cond
    [(and (equal? l1 '()) (equal? l2 '()) )
     (display "im empty\n")
-    '()
+    (car pmap)
     ]
    [(not(equal? (car l1) (car l2) ) )
     (display "about to bind\n")
     (cons
      (pair-input-and-binded doIRev (car l1) (car l2))
-     (create-bindings2 doIRev (cdr l1) (cdr l2) )
+     (create-bindings2 doIRev (cdr l1) (cdr l2) pmap)
      )
     ]
    [else
     (display "else case\n")
-    (create-bindings2 doIRev (cdr l1) (cdr l2) )
+    (create-bindings2 doIRev (cdr l1) (cdr l2) pmap)
     ]
    )
   )
@@ -74,7 +74,7 @@
   [(equal? (car x) (car y)) x]
   [(or (list? (car x)) (list? (car y)))
    (display "\n One OF THESE IS ALIST\n")
-   (compare-list (car x) (car y))
+   (compare-list (car x) (car y) '(()) '(()) )
    ]
   [else
    (list `(if % ,(car x) ,(car y)) )
@@ -100,7 +100,7 @@
       ]
      [else
       (display "this is the final list\n")
-      (compare-list x y)
+      (compare-list x y '(()) '(()))
       ]
      )
     ]
@@ -289,7 +289,7 @@
     ]
    [(or (equal? (car l1) 'let) (equal? (car l1) 'lambda) )
     (display "\n WE FOUND A FUKCIN LET INSIDE THE BODY\n")
-    (compare-list l1 l2)
+    (compare-list l1 l2 '(()) '(()))
     ]
    [(or (equal? (assoc (car l1) mappings1) #f) (equal? (assoc (car l2) mappings2) #f))
     (display "\n one was not found in the map\n")
@@ -349,13 +349,13 @@
    )
   )
 
-(define (let-inside l1 l2)
-  (display `(LOOK AT my bindings: ,(create-bindings #f (car l1) (car l2))) )
-  (display `(LOOK AT my bindings: ,(create-bindings #t (car l1) (car l2))) )
+(define (let-inside l1 l2 pmap1 pmap2)
+  (display `(LOOK AT my bindings: ,(create-bindings #f (car l1) (car l2) pmap1) ) )
+  (display `(LOOK AT my bindings: ,(create-bindings #t (car l1) (car l2) pmap2) ) )
   (display "\n")
-  (display `(funcbod1 is: ,(car l1)) )
+  (display `(funcbod1 is: ,l1) )
   (display "\n")
-  (display `(funcbod2 is: ,(car l2)) )
+  (display `(funcbod2 is: ,l2) )
   (display "\n FUNC BODS ABOVE ME \n")
   (list
    `let
@@ -363,19 +363,19 @@
    (func-body
     (car (cdr l1) )
     (car (cdr l2) )
-    (create-bindings #f (car l1) (car l2))
-    (create-bindings #t (car l1) (car l2))
+    (create-bindings #f (car l1) (car l2) pmap1)
+    (create-bindings #t (car l1) (car l2) pmap2)
     )
     )
   )
 
-(define (lambda-inside l1 l2)
-  (display `(LOOK AT my bindings: ,(create-bindings2 #f (car l1) (car l2))) )
-  (display `(LOOK AT my bindings: ,(create-bindings2 #t (car l1) (car l2))) )
+(define (lambda-inside l1 l2 pmap1 pmap2)
+  (display `(LOOK AT my bindings: ,(create-bindings2 #f (car l1) (car l2) pmap1)  ) )
+  (display `(LOOK AT my bindings: ,(create-bindings2 #t (car l1) (car l2) pmap2)  ) )
   (display "\n")
-  (display `(def1 is: ,(cdr l1)) )
+  (display `(def1 is: ,l1) )
   (display "\n")
-  (display `(def2 is: ,(cdr l2)) )
+  (display `(def2 is: ,l2) )
   (display "\n FUNC BODS ABOVE ME \n")
   (list
    `lambda
@@ -383,8 +383,8 @@
    (func-body2
     (car (cdr l1))
     (car (cdr l2))
-    (create-bindings2 #f (car l1) (car l2))
-    (create-bindings2 #t (car l1) (car l2))
+    (create-bindings2 #f (car l1) (car l2) pmap1)
+    (create-bindings2 #t (car l1) (car l2) pmap2)
     )
    )
   )
@@ -394,11 +394,7 @@
   (cond ((null? lst) 0)
 	(else (+ 1 (list-length (cdr lst))))))
 
-(define (compare-list x y)
-;  (display `(HEY THIS IS X ,x))
-;  (display "\n")
-;  (display `(HEY THIS IS Y ,y))
-;  (display "\n")
+(define (compare-list x y pmap1 pmap2)
   (cond
    [(or (equal? x '()) (equal? y '()) ) ;base case: two empty lists so we return one too
     (display `(empty: x = ,x y = ,y))
@@ -411,69 +407,60 @@
    [(or (equal? (car x) 'quote) (equal? (car y) 'quote)) ;dont recurse if quoted
     `(if % ,x ,y)
     ]
-   [(or (and (equal? (car x) 'if) (not (equal? (car y) 'if) )) ;if one of the cases has an if statement but not the other, dont recurse
-	(and (equal? (car y) 'if) (not (equal? (car x) 'if) ))
-	)
+   [(or (and (equal? (car x) 'if) (not (equal? (car y) 'if) )) 
+	(and (equal? (car y) 'if) (not (equal? (car x) 'if) ))	)
     `(if % ,x ,y)
     ]
-   [(and (boolean? (car x) )(boolean? (car y)) ) ;x and y are booleans to take care of
+   [(and (boolean? (car x) )(boolean? (car y)) )
     (display "bools \n")
     (cons
      (if (car x) '% '(not %))
-     (compare-list (cdr x) (cdr y))
+     (compare-list (cdr x) (cdr y) pmap1 pmap2)
      )
     ]
-   [(equal? (car x) (car y)) ;head elements are equal so we recurse
+   [(equal? (car x) (car y))
     (display `(head elements are equal: car x = ,(car x) AND car y = ,(car y)))
     (display "\n")
     (cond
      [(equal? (car x) 'let)
       (display "LET CASE HERE \n")
-      (let-inside (cdr x) (cdr y))
-      ] ;let case
+      (let-inside (cdr x) (cdr y) pmap1 pmap2)
+      ]
      [(equal? (car x) 'lambda)
       (display "LAMBDA CASE HERE\n")
- ;     (display x)
-;      (display y)
-      (lambda-inside (cdr x) (cdr y))
+      (lambda-inside (cdr x) (cdr y) pmap1 pmap2)
       ]
      [else
-      (cons (car x) (compare-list (cdr x) (cdr y)) )
+      (cons (car x) (compare-list (cdr x) (cdr y) pmap1 pmap2) )
       ]
      )
     ]
-   [(or (list? (car x) ) (list? (car y) ) )  ;if list of lists
+   [(or (list? (car x) ) (list? (car y) ) ) 
 ;    (display `(list of lists: car x = ,(car x) AND car y = ,(car y)))
 ;    (display "\n")
-    (cons (expr-compare (car x) (car y)) (compare-list (cdr x) (cdr y) ))
+    (cons (expr-compare (car x) (car y)) (compare-list (cdr x) (cdr y) pmap1 pmap2))
     ]
-   [else ;head elements are not equal
+   [else
     (display `(head elements not equal: car x =  ,(car x) AND car y = ,(car y)))
     (display "\n")
-    (cons `(if % ,(car x) ,(car y)) (compare-list (cdr x) (cdr y)) )
+    (cons `(if % ,(car x) ,(car y)) (compare-list (cdr x) (cdr y) pmap1 pmap2))
     ]
    )
   )
 
 (define (expr-compare x y)
   (cond
-   [(equal? x y) ;base case: x and y are sole equal elements
-;    (display `(x and y are equal: ,x))
-;    (display "\n")
+   [(equal? x y) 
     x
     ]
-   [(and (boolean? x)(boolean? y)) ;x and y are booleans to take care of
-;    (display "x and y are boolsz \n")
+   [(and (boolean? x)(boolean? y)) 
     (if x '% '(not %))
     ]
-   [(not (and (list? x) (list? y) ) ) ;x or y is a list but not both so we return the if case
-;    (display "one is not a list \n")
+   [(not (and (list? x) (list? y) ) ) 
     `(if % ,x ,y)
     ]
-   [(and (list? x)(list? y)) ;x and y are both lists so we compare
-;    (display `(compare lists: ,x AND ,y))
-;    (display "\n")
-    (compare-list x y)
+   [(and (list? x)(list? y)) 
+    (compare-list x y '(()) '(()))
     ]
    )
   )
@@ -498,8 +485,6 @@
 (define test-expr-x '((lambda (a b) (f a b)) 1 2))
 (define test-expr-y '((lambda (a c) (f c a)) 1 2))
 
-
-;(define (tests) 
 (assert (expr-compare 12 12) 12)
 (assert (expr-compare 12 20) `(if % 12 20))
 (assert (expr-compare #t #t) '#t)
@@ -534,7 +519,7 @@
 		      '((lambda (a c) (f c a)) 1 2))
 	'((lambda (a b!c) (f (if % a b!c) (if % b!c a)))
 	       1 2))
-					;)
+
 
 '(let
      (( a (lambda (b a) (b a)) ))
