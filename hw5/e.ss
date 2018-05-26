@@ -24,7 +24,7 @@
   (cond
    [(and (equal? l1 '()) (equal? l2 '()) )
     (display "im empty\n")
-    (car pmap)
+    pmap
     ]
    [(not(equal? (car (car l1)) (car (car l2)) ) )
     (display "about to bind\n")
@@ -51,7 +51,7 @@
   (cond
    [(and (equal? l1 '()) (equal? l2 '()) )
     (display "im empty\n")
-    (car pmap)
+     pmap
     ]
    [(not(equal? (car l1) (car l2) ) )
     (display "about to bind\n")
@@ -69,12 +69,14 @@
 
 (define (match-eval x y mappings1 mappings2)
   (display "match-eval\n")
+  (display `(mappings1 = ,mappings1 mappings2 = ,mappings2))
+  (display "\n")
   (display `(x = ,(car x) y = ,(car y)) )
   (cond 
   [(equal? (car x) (car y)) x]
   [(or (list? (car x)) (list? (car y)))
    (display "\n One OF THESE IS ALIST\n")
-   (compare-list (car x) (car y) '(()) '(()) )
+   (compare-list (car x) (car y) mappings1 mappings2 )
    ]
   [else
    (list `(if % ,(car x) ,(car y)) )
@@ -82,7 +84,7 @@
   )
   )
 
-(define (handle-list-calls x y)
+(define (handle-list-calls x y mappings1 mappings2)
   (display "handle-list-calls\n")
   (display `(x = ,x))
   (display "\n")
@@ -96,11 +98,11 @@
     (cond
      [(or (list? (car x)) (list? (car y)) )
       (display "list of lists\n")
-      (handle-list-calls (car x) (car y))
+      (handle-list-calls (car x) (car y) mappings1 mappings2)
       ]
      [else
       (display "this is the final list\n")
-      (compare-list x y '(()) '(()))
+      (compare-list x y mappings1 mappings2)
       ]
      )
     ]
@@ -115,7 +117,7 @@
    [(equal? x y) x]
    [(or (list? x) (list? y)) ;comment this out if it fails in the final
     (display "\n YO LAMBDA HAS  LIST BOI IN THE PAIR\n")
-    (handle-list-calls x y)
+    (handle-list-calls x y mappings1 mappings2)
     ]
    [else
     `(if % ,x ,y)
@@ -137,9 +139,7 @@
       "!"
      (symbol->string b ) ) )
     ]
-   [else
-    a
-    ]
+   [else a ]
    )
   )
 
@@ -157,6 +157,10 @@
 
 (define (def-pair2  def1 def2 mappings1 mappings2)
   (display "DEF-PAIR2\n")
+  (display `(mappings1 = ,mappings1))
+  (display "\n")
+  (display `(mappings2 = ,mappings2))
+  (display "\n")
   (display `(def1 = ,def1))
   (display "\n")
   (display `(def2 = ,def2))
@@ -344,6 +348,7 @@
   )
 
 (define (let-inside l1 l2 pmap1 pmap2)
+  (display `(PMAP1 = ,pmap1 PMAP2 = ,pmap2))
   (display `(LOOK AT my bindings: ,(create-bindings #f (car l1) (car l2) pmap1) ) )
   (display `(LOOK AT my bindings: ,(create-bindings #t (car l1) (car l2) pmap2) ) )
   (display "\n")
@@ -354,7 +359,12 @@
   ;; may need to change
   (list
    `let
-   (def-inside (car l1) (car l2) pmap1 pmap2)
+   (def-inside
+     (car l1)
+     (car l2)
+     (create-bindings #f (car l1) (car l2) pmap1)
+     (create-bindings #t (car l1) (car l2) pmap2)
+     )
    (func-body
     (car (cdr l1) )
     (car (cdr l2) )
@@ -365,6 +375,7 @@
   )
 
 (define (lambda-inside l1 l2 pmap1 pmap2)
+  (display `(PMAP1 = ,pmap1 PMAP2 = ,pmap2))
   (display `(LOOK AT my bindings: ,(create-bindings2 #f (car l1) (car l2) pmap1)  ) )
   (display `(LOOK AT my bindings: ,(create-bindings2 #t (car l1) (car l2) pmap2)  ) )
   (display "\n")
@@ -372,10 +383,15 @@
   (display "\n")
   (display `(def2 is: ,l2) )
   (display "\n FUNC BODS ABOVE ME \n")
-  ;; may need to change
+  ;; LOL I NEVER APPLY THE PREV BIDNIGNS TO DEF-PAIR
   (list
    `lambda
-   (def-pair2 (car l1) (car l2) pmap1 pmap2)
+   (def-pair2
+     (car l1)
+     (car l2)
+     (create-bindings2 #f (car l1) (car l2) pmap1)
+     (create-bindings2 #t (car l1) (car l2) pmap2)
+     )
    (func-body2
     (car (cdr l1))
     (car (cdr l2))
@@ -392,15 +408,15 @@
 
 (define (compare-list x y pmap1 pmap2)
   (cond
-   [(or (equal? x '()) (equal? y '()) ) ;base case: two empty lists so we return one too
+   [(or (equal? x '()) (equal? y '()) ) 
     (display `(empty: x = ,x y = ,y))
     (display "\n")
     '()
     ]
-   [(not (equal? (list-length x) (list-length y) )  ) ;if list lengths are diff stop
+   [(not (equal? (list-length x) (list-length y) )  ) 
     `(if % ,x ,y)
     ]
-   [(or (equal? (car x) 'quote) (equal? (car y) 'quote)) ;dont recurse if quoted
+   [(or (equal? (car x) 'quote) (equal? (car y) 'quote)) 
     `(if % ,x ,y)
     ]
    [(or (and (equal? (car x) 'if) (not (equal? (car y) 'if) )) 
@@ -456,7 +472,7 @@
     `(if % ,x ,y)
     ]
    [(and (list? x)(list? y)) 
-    (compare-list x y '(()) '(()))
+    (compare-list x y '() '())
     ]
    )
   )
