@@ -50,17 +50,6 @@
    )
   )
 
-(define (match-eval x y mappings1 mappings2)
-  (cond 
-  [(equal? (car x) (car y)) x]
-  [(or (list? (car x)) (list? (car y)))
-   (compare-list (car x) (car y) mappings1 mappings2 )
-   ]
-  [else
-   (list `(if % ,(car x) ,(car y)) )
-   ]
-  )
-  )
 
 (define (handle-list-calls x y mappings1 mappings2)
   (cond
@@ -78,6 +67,18 @@
      )
     ]
    )
+  )
+
+(define (match-eval x y mappings1 mappings2)
+  (cond 
+  [(equal? (car x) (car y)) x]
+  [(or (list? (car x)) (list? (car y)))
+   (handle-list-calls (car x) (car y) mappings1 mappings2)
+   ]
+  [else
+   (list `(if % ,(car x) ,(car y)) )
+   ]
+  )
   )
 
 (define (match-eval2 x y mappings1 mappings2)
@@ -104,7 +105,6 @@
    [else a ]
    )
   )
-
 
 (define (match-outer-var a b mappings1 mappings2)
   (cond
