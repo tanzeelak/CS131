@@ -152,23 +152,33 @@
   (display "\n")
   (cond
    [(or (equal? (assoc a mappings1) #f) (equal? (assoc b mappings2) #f))
+   (display "at least one was not found in the map\n")
     (cond
      [(and (equal? (assoc a mappings1) #f) (equal? (assoc b mappings2) #f))
       (display "neither val was found in teh map so we just bind\n")
       (match-var a b)
       ]
-     )
+    )
     ]
    [(or (not (equal? (assoc a mappings1) #f)) (not (equal? (assoc b mappings2) #f)))
+    (display "both were found in the map\n")
+    (display `(assoc a mappings1 = ,(assoc a mappings1) ))
+    (display "\n")
+    (display `(assoc b mappings2 = ,(assoc b mappings2) ))
+   (display "\n")
     (cond
      [(equal? (cdr (assoc a mappings1)) (cdr (assoc b mappings2)) )
       (display "they are mapped to the same val so we return that val\n")
-      (display (cdr (assoc a mappings1)))
-      ;;      (cdr (assoc a mappings1))
+     (display (cdr (assoc a mappings1)))
+     (car (cdr (assoc a mappings1)))
+     ]
+     [else
+      (display "they are mapped to different vals so we % the vals")
+      (match-eval (cdr (assoc a mappings1)) (cdr (assoc b mappings2)) mappings1 mappings2)
       ]
      )
     ]
-   )
+  )
   )
 
 (define (def-pair islambda def1 def2 mappings1 mappings2)
@@ -178,7 +188,8 @@
   (display `(def2 = ,(cdr def2)))
   (display "\n")
   (cons
-   (match-var (car def1) (car def2))
+   (match-outer-var (car def1) (car def2) mappings1 mappings2)
+;   (match-var (car def1) (car def2))
    (match-eval (cdr def1) (cdr def2) mappings1 mappings2)
    )
   )
@@ -201,7 +212,8 @@
    [else
     (display "else in def pair\n")
     (cons
-     (match-var (car def1) (car def2))
+     (match-outer-var (car def1) (car def2) mappings1 mappings2)
+ ;    (match-var (car def1) (car def2) )
      (def-pair2 (cdr def1) (cdr def2) mappings1 mappings2)
      )
     ]
