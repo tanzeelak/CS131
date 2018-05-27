@@ -67,23 +67,6 @@
    )
   )
 
-(define (match-eval x y mappings1 mappings2)
-  (display "match-eval\n")
-  (display `(mappings1 = ,mappings1 mappings2 = ,mappings2))
-  (display "\n")
-  (display `(x = ,(car x) y = ,(car y)) )
-  (cond 
-  [(equal? (car x) (car y)) x]
-  [(or (list? (car x)) (list? (car y)))
-   (display "\n One OF THESE IS ALIST\n")
-   (compare-list (car x) (car y) mappings1 mappings2 )
-   ]
-  [else
-   (list `(if % ,(car x) ,(car y)) )
-   ]
-  )
-  )
-
 (define (handle-list-calls x y mappings1 mappings2)
   (display "handle-list-calls\n")
   (display `(x = ,x))
@@ -107,6 +90,23 @@
      )
     ]
    )
+  )
+
+(define (match-eval x y mappings1 mappings2)
+  (display "match-eval\n")
+  (display `(mappings1 = ,mappings1 mappings2 = ,mappings2))
+  (display "\n")
+  (display `(x = ,(car x) y = ,(car y)) )
+  (cond 
+  [(equal? (car x) (car y)) x]
+  [(or (list? (car x)) (list? (car y)))
+   (display "\n One OF THESE IS ALIST\n")
+   (handle-list-calls (car x) (car y) mappings1 mappings2)
+   ]
+  [else
+   (list `(if % ,(car x) ,(car y)) )
+   ]
+  )
   )
 
 (define (match-eval2 x y mappings1 mappings2)
@@ -534,8 +534,25 @@
   )
 
 ; to test: (expr-compare test-expr-x test-expr-y) 
-(define test-expr-x '((lambda (a b) (f a b)) 1 2))
-(define test-expr-y '((lambda (a c) (f c a)) 1 2))
+(define test-expr-x
+  '(
+    ((lambda (a b) (f a b)) 1 2)
+    #f
+    a
+    (quote (a b c))
+    (+ 3 (let ((a 1) (b 2)) (list a b)))
+    )
+  )
+(define test-expr-y
+  '(
+    ((lambda (a c) (f c a)) 1 2)
+    #t
+    (cons c hehe)
+    (quote (a b c))
+    (+ 2 (let ((a 1) (c 2)) (list a c)))
+    )
+    )
+
 
 (assert (expr-compare 12 12) 12)
 (assert (expr-compare 12 20) `(if % 12 20))
