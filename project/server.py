@@ -5,6 +5,9 @@ import logging
 import argparse
 
 class EchoServerClientProtocol(asyncio.Protocol):
+    # def __init__(self, id):
+    #     self.id = id
+
     def connection_made(self, transport):
         self.transport = transport
         self.peername = transport.get_extra_info('peername')
