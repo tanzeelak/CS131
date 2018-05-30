@@ -13,6 +13,16 @@ class EchoServerClientProtocol(asyncio.Protocol):
 
     def data_received(self, data):
         message = data.decode()
+        message_list = message.split()
+        command = message_list[0]
+        clientID = message_list[1]
+        latitude = message_list[2]
+        longitude = message_list[3]
+        print(command)
+        print(clientID)
+        print(latitude)
+        print(longitude)
+
         print('Data received: {!r}'.format(message))
 
         print('Send: {!r}'.format(message))
@@ -47,10 +57,9 @@ def main():
     loop.close()
 
 if __name__ == "__main__":
-    # if (len(sys.argv) != 2):
-    #     sys.stderr.write("hehe")
-    #     exit(1)
-    
-    print('Please provide an appropriate server name.')
-    exit(1)
+    if (len(sys.argv) != 2):
+        sys.stderr.write("hehe")
+        exit(1)
+    serverID = sys.argv[1]
+
     main()
