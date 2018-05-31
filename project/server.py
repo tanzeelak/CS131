@@ -5,6 +5,7 @@ import logging
 import time
 
 API_KEY =  'AIzaSyAq2jI8Y0mp7475Fe_0Bu3Q2nxW5gkQeB4'
+GOOGLE_URL = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?'
 talkto = {
     'Goloman': ['Hands', 'Holiday', 'Wilkes'],
     'Hands': ['Goloman', 'Wilkes'],
@@ -19,18 +20,20 @@ class EchoServerClientProtocol(asyncio.Protocol):
         self.portNum = portNum
         self.frenz = talkto[idName]
 
-    def finishReq(self, future):
-        print("nice nice")
-
     async def fetch(self, session, url):
         async with session.get(url) as response:
             return await response.text()
 
-    async def q_google(self, future):
-        print("haha hoohoo")
+    async def query_google(self, future):
+        #url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=-33.8670522,151.1957362&radius=1500&type=restaurant&keyword=cruise&key=AIzaSyAq2jI8Y0mp7475Fe_0Bu3Q2nxW5gkQeB4'
+        latitude = -33.8670522
+        longitude = 151.1957362
+        radius = 1500
+        parameters = {'key' : API_KEY, 'location' : str(latitude) + ',' + str(longitude), 'radius' : str(radius)}
         async with aiohttp.ClientSession() as session:
-            html = await self.fetch(session, 'http://python.org')
-            self.transport.write(html.encode())
+            async with session.get(GOOGLE_URL, params = parameters) as resp:
+                res = (await resp.text())
+                self.transport.write(res.encode())
 
     def handle_iamat(self, message_list):
         print(message_list)
@@ -52,10 +55,8 @@ class EchoServerClientProtocol(asyncio.Protocol):
         timeDiff = time.time() - float(timestamp)
         res = 'AT ' + self.idName + ' ' + otherClientID + ' 345678 ' + str(timeDiff)
         data = res.encode(encoding='UTF-8',errors='strict')
-        #self.transport.write(data)
         future = asyncio.Future()
-        asyncio.ensure_future(self.q_google(future))
-        #future.add_done_callback(self.finishReq)
+        asyncio.ensure_future(self.query_google(future))
         
     def connection_made(self, transport):
         self.transport = transport
