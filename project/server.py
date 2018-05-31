@@ -39,7 +39,19 @@ class EchoServerClientProtocol(asyncio.Protocol):
 
 
 def match_serverID_port(serverID):
-    return 8888
+    if serverID == "Goloman":
+        return 12285
+    elif serverID == "Hands":
+        return 12286
+    elif serverID == "Holiday":
+        return 12287
+    elif serverID == "Wilkes":
+        return 12288
+    elif serverID == "Welsh":
+        return 12289
+    else:
+        print("u r not real")
+        return sys.exit(1)
     
 def main(serverID):
     portNum = match_serverID_port(serverID)
@@ -51,7 +63,8 @@ def main(serverID):
         "Wilkes": ["Goloman", "Hands", "Holiday"],
         "Welsh": ["Holiday"]
     }
-    
+
+    portNum = match_serverID_port(serverID)
     loop = asyncio.get_event_loop()
     # Each client connection will create a new protocol instance
 
