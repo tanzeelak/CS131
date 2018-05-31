@@ -2,68 +2,83 @@ import asyncio
 import aiohttp
 import sys
 import logging
-import argparse
+import time
 
+
+
+API_KEY =  'AIzaSyAq2jI8Y0mp7475Fe_0Bu3Q2nxW5gkQeB4'
+talkto = {
+    'Goloman': ['Hands', 'Holiday', 'Wilkes'],
+    'Hands': ['Goloman', 'Wilkes'],
+    'Holiday': ['Goloman', 'Welsh', 'Wilkes'],
+    'Wilkes': ['Goloman', 'Hands', 'Holiday'],
+    'Welsh': ['Holiday']
+}
+        
 class EchoServerClientProtocol(asyncio.Protocol):
     def __init__(self, idNum, portNum):
         self.idNum = idNum
         self.portNum = portNum
+        self.frenz = talkto[idNum]
 
+    def handle_iamat(self, message_list):
+        print(message_list)
+        clientID = message_list[1]
+        latlong = message_list[2] #check if number is between -180 to 180
+        timestamp = message_list[3]
+        #print(time.time())
+        res = 'AT Goloman +0.263873386 kiwi.cs.ucla.edu +34.068930-118.445127 1520023934.918963997'
+        data = res.encode(encoding='UTF-8',errors='strict')
+        self.transport.write(data)
+
+    def handle_whatsat(self, message_list):
+        print('whatsat')
+        print(message_list)
+        otherClentID = message_list[1]
+        radius = message_list[2]
+        upperBound = message_list[3]
+        
     def connection_made(self, transport):
         self.transport = transport
         self.peername = transport.get_extra_info('peername')
-        
         print('Connection from {}'.format(self.peername))
-
+        
     def data_received(self, data):
         #check length of message
         message = data.decode()
         message_list = message.split()
-        command = message_list[0]
-        clientID = message_list[1]
-        latitude = message_list[2]
-        longitude = message_list[3]
-        print(command)
-        print(clientID)
-        print(latitude) #check if number is between -180 to 180
-        print(longitude)
-
-        print('Data received: {!r}'.format(message))
-
-        print('Send: {!r}'.format(message))
-        self.transport.write(data)
+        if len(message_list) is not 0:
+            command = message_list[0]
+            if command == 'IAMAT':
+                self.handle_iamat(message_list)
+            elif command == 'WHATSAT':
+                self.handle_whatsat(message_list)
+            else:
+                print('garbage')
 
     def connection_lost(self, exc):
         print('Lost connection of {}'.format(self.peername))
         self.transport.close()
 
-
 def match_serverID_port(serverID):
-    if serverID == "Goloman":
+    if serverID == 'Goloman':
         return 12285
-    elif serverID == "Hands":
+    elif serverID == 'Hands':
         return 12286
-    elif serverID == "Holiday":
+    elif serverID == 'Holiday':
         return 12287
-    elif serverID == "Wilkes":
+    elif serverID == 'Wilkes':
         return 12288
-    elif serverID == "Welsh":
+    elif serverID == 'Welsh':
         return 12289
     else:
-        print("u r not real")
+        print('u r not real')
         return sys.exit(1)
     
 def main(serverID):
     portNum = match_serverID_port(serverID)
 
-    talkto = {
-        "Goloman": ["Hands", "Holiday", "Wilkes"],
-        "Hands": ["Goloman", "Wilkes"],
-        "Holiday": ["Goloman", "Welsh", "Wilkes"],
-        "Wilkes": ["Goloman", "Hands", "Holiday"],
-        "Welsh": ["Holiday"]
-    }
-
+    
     portNum = match_serverID_port(serverID)
     loop = asyncio.get_event_loop()
     # Each client connection will create a new protocol instance
@@ -87,9 +102,9 @@ def main(serverID):
     loop.run_until_complete(server.wait_closed())
     loop.close()
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     if (len(sys.argv) != 2):
-        sys.stderr.write("hehe")
+        sys.stderr.write('hehe')
         exit(1)
     serverID = sys.argv[1]
     
