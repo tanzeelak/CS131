@@ -19,6 +19,19 @@ class EchoServerClientProtocol(asyncio.Protocol):
         self.portNum = portNum
         self.frenz = talkto[idName]
 
+    def finishReq(self, future):
+        print("nice nice")
+
+    async def fetch(self, session, url):
+        async with session.get(url) as response:
+            return await response.text()
+
+    async def q_google(self, future):
+        print("haha hoohoo")
+        async with aiohttp.ClientSession() as session:
+            html = await self.fetch(session, 'http://python.org')
+            self.transport.write(html.encode())
+
     def handle_iamat(self, message_list):
         print(message_list)
         clientID = message_list[1]
@@ -28,7 +41,7 @@ class EchoServerClientProtocol(asyncio.Protocol):
         res = 'AT ' + self.idName + ' ' + clientID + ' ' + latlong + ' ' + str(timeDiff)
         data = res.encode(encoding='UTF-8',errors='strict')
         self.transport.write(data)
-
+        
     def handle_whatsat(self, message_list):
         print('whatsat')
         print(message_list)
@@ -39,7 +52,10 @@ class EchoServerClientProtocol(asyncio.Protocol):
         timeDiff = time.time() - float(timestamp)
         res = 'AT ' + self.idName + ' ' + otherClientID + ' 345678 ' + str(timeDiff)
         data = res.encode(encoding='UTF-8',errors='strict')
-        self.transport.write(data)
+        #self.transport.write(data)
+        future = asyncio.Future()
+        asyncio.ensure_future(self.q_google(future))
+        #future.add_done_callback(self.finishReq)
         
     def connection_made(self, transport):
         self.transport = transport
@@ -107,5 +123,4 @@ if __name__ == '__main__':
         sys.stderr.write('hehe')
         exit(1)
     serverID = sys.argv[1]
-    
     main(serverID)
