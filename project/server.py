@@ -19,13 +19,9 @@ class EchoServerClientProtocol(asyncio.Protocol):
         self.idName = idName
         self.portNum = portNum
         self.frenz = talkto[idName]
+        self.clients = dict()
 
-    async def fetch(self, session, url):
-        async with session.get(url) as response:
-            return await response.text()
-
-    async def query_google(self, future):
-        #url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=-33.8670522,151.1957362&radius=1500&type=restaurant&keyword=cruise&key=AIzaSyAq2jI8Y0mp7475Fe_0Bu3Q2nxW5gkQeB4'
+    async def query_google(self, future, radius, upperBound):
         latitude = -33.8670522
         longitude = 151.1957362
         radius = 1500
@@ -43,6 +39,7 @@ class EchoServerClientProtocol(asyncio.Protocol):
         timeDiff = time.time() - float(timestamp)
         res = 'AT ' + self.idName + ' ' + clientID + ' ' + latlong + ' ' + str(timeDiff)
         data = res.encode(encoding='UTF-8',errors='strict')
+        self.clients[clientID] = latlong, timestamp
         self.transport.write(data)
         
     def handle_whatsat(self, message_list):
@@ -51,12 +48,8 @@ class EchoServerClientProtocol(asyncio.Protocol):
         otherClientID = message_list[1]
         radius = message_list[2]
         upperBound = message_list[3]
-        timestamp = message_list[3]
-        timeDiff = time.time() - float(timestamp)
-        res = 'AT ' + self.idName + ' ' + otherClientID + ' 345678 ' + str(timeDiff)
-        data = res.encode(encoding='UTF-8',errors='strict')
         future = asyncio.Future()
-        asyncio.ensure_future(self.query_google(future))
+        asyncio.ensure_future(self.query_google(future, radius, upperBound))
         
     def connection_made(self, transport):
         self.transport = transport
