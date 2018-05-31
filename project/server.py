@@ -5,8 +5,9 @@ import logging
 import argparse
 
 class EchoServerClientProtocol(asyncio.Protocol):
-    # def __init__(self, id):
-    #     self.id = id
+    def __init__(self, idNum, portNum):
+        self.idNum = idNum
+        self.portNum = portNum
 
     def connection_made(self, transport):
         self.transport = transport
@@ -15,6 +16,7 @@ class EchoServerClientProtocol(asyncio.Protocol):
         print('Connection from {}'.format(self.peername))
 
     def data_received(self, data):
+        #check length of message
         message = data.decode()
         message_list = message.split()
         command = message_list[0]
@@ -23,7 +25,7 @@ class EchoServerClientProtocol(asyncio.Protocol):
         longitude = message_list[3]
         print(command)
         print(clientID)
-        print(latitude)
+        print(latitude) #check if number is between -180 to 180
         print(longitude)
 
         print('Data received: {!r}'.format(message))
@@ -35,7 +37,21 @@ class EchoServerClientProtocol(asyncio.Protocol):
         print('Lost connection of {}'.format(self.peername))
         self.transport.close()
 
-def main():
+
+def match_serverID_port(serverID):
+    return 8888
+    
+def main(serverID):
+    portNum = match_serverID_port(serverID)
+
+    talkto = {
+        "Goloman": ["Hands", "Holiday", "Wilkes"],
+        "Hands": ["Goloman", "Wilkes"],
+        "Holiday": ["Goloman", "Welsh", "Wilkes"],
+        "Wilkes": ["Goloman", "Hands", "Holiday"],
+        "Welsh": ["Holiday"]
+    }
+    
     loop = asyncio.get_event_loop()
     # Each client connection will create a new protocol instance
 
@@ -43,8 +59,7 @@ def main():
     # 127.0.0.1 is intended for the 'localhost' loopback devices.
     # If you have multiple NIC(Network Interface Card)s, you may specify the specific IP address to be used (listen).
     # 0.0.0.0 is to use any available NIC device.
-
-    coro = loop.create_server(EchoServerClientProtocol, '0.0.0.0', 8888)
+    coro = loop.create_server(lambda: EchoServerClientProtocol(serverID, portNum), '0.0.0.0', portNum)
     server = loop.run_until_complete(coro)
 
     # Serve requests until Ctrl+C is pressed
@@ -64,5 +79,5 @@ if __name__ == "__main__":
         sys.stderr.write("hehe")
         exit(1)
     serverID = sys.argv[1]
-
-    main()
+    
+    main(serverID)
