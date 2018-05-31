@@ -4,8 +4,6 @@ import sys
 import logging
 import time
 
-
-
 API_KEY =  'AIzaSyAq2jI8Y0mp7475Fe_0Bu3Q2nxW5gkQeB4'
 talkto = {
     'Goloman': ['Hands', 'Holiday', 'Wilkes'],
@@ -26,9 +24,7 @@ class EchoServerClientProtocol(asyncio.Protocol):
         clientID = message_list[1]
         latlong = message_list[2] #check if number is between -180 to 180
         timestamp = message_list[3]
-        #print(time.time())
         timeDiff = time.time() - float(timestamp)
-        #res = 'AT Goloman +0.263873386 kiwi.cs.ucla.edu +34.068930-118.445127 1520023934.918963997'
         res = 'AT ' + self.idName + ' ' + clientID + ' ' + latlong + ' ' + str(timeDiff)
         data = res.encode(encoding='UTF-8',errors='strict')
         self.transport.write(data)
@@ -36,9 +32,14 @@ class EchoServerClientProtocol(asyncio.Protocol):
     def handle_whatsat(self, message_list):
         print('whatsat')
         print(message_list)
-        otherClentID = message_list[1]
+        otherClientID = message_list[1]
         radius = message_list[2]
         upperBound = message_list[3]
+        timestamp = message_list[3]
+        timeDiff = time.time() - float(timestamp)
+        res = 'AT ' + self.idName + ' ' + otherClientID + ' 345678 ' + str(timeDiff)
+        data = res.encode(encoding='UTF-8',errors='strict')
+        self.transport.write(data)
         
     def connection_made(self, transport):
         self.transport = transport
@@ -78,9 +79,6 @@ def match_serverID_port(serverID):
         return sys.exit(1)
     
 def main(serverID):
-    portNum = match_serverID_port(serverID)
-
-    
     portNum = match_serverID_port(serverID)
     loop = asyncio.get_event_loop()
     # Each client connection will create a new protocol instance
