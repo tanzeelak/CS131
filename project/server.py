@@ -16,10 +16,10 @@ talkto = {
 }
         
 class EchoServerClientProtocol(asyncio.Protocol):
-    def __init__(self, idNum, portNum):
-        self.idNum = idNum
+    def __init__(self, idName, portNum):
+        self.idName = idName
         self.portNum = portNum
-        self.frenz = talkto[idNum]
+        self.frenz = talkto[idName]
 
     def handle_iamat(self, message_list):
         print(message_list)
@@ -27,7 +27,9 @@ class EchoServerClientProtocol(asyncio.Protocol):
         latlong = message_list[2] #check if number is between -180 to 180
         timestamp = message_list[3]
         #print(time.time())
-        res = 'AT Goloman +0.263873386 kiwi.cs.ucla.edu +34.068930-118.445127 1520023934.918963997'
+        timeDiff = time.time() - float(timestamp)
+        #res = 'AT Goloman +0.263873386 kiwi.cs.ucla.edu +34.068930-118.445127 1520023934.918963997'
+        res = 'AT ' + self.idName + ' ' + clientID + ' ' + latlong + ' ' + str(timeDiff)
         data = res.encode(encoding='UTF-8',errors='strict')
         self.transport.write(data)
 
