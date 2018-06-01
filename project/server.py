@@ -36,17 +36,18 @@ class EchoServerClientProtocol(asyncio.Protocol):
                 latitude += c
             elif latFlag == False:
                 longitude += c
-        return(latitude + ',' + longitude)
+        return(latitude,longitude)
         
-    async def query_google(self, future, radius, upperBound):
-        latitude = -33.8670522
-        longitude = 151.1957362
-        radius = 1500
+    async def query_google(self, future, clientInfo, radius, upperBound):
+        latitude = float(clientInfo[0])
+        longitude = float(clientInfo[1])
+        print(latitude)
+        print(longitude)
         parameters = {'key' : API_KEY, 'location' : str(latitude) + ',' + str(longitude), 'radius' : str(radius)}
         async with aiohttp.ClientSession() as session:
             async with session.get(GOOGLE_URL, params = parameters) as resp:
-                res = (await resp.text())
-                self.transport.write(res.encode())
+                jsonResp = (await resp.text())
+                self.transport.write(jsonResp.encode())
 
     def handle_iamat(self, message_list):
         print(message_list)
@@ -54,10 +55,11 @@ class EchoServerClientProtocol(asyncio.Protocol):
         latlong = message_list[2] #check if number is between -180 to 180
         timestamp = message_list[3]
         timeDiff = time.time() - float(timestamp)
-        print(self.parse_location(latlong))
-        res = 'AT ' + self.idName + ' ' + clientID + ' ' + latlong + ' ' + str(timeDiff)
+        location = self.parse_location(latlong)
+        res = 'AT ' + self.idName + ' ' + clientID + ' ' + location[0] + location[1] + ' ' + str(timeDiff)
         data = res.encode(encoding='UTF-8',errors='strict')
-        self.clients[clientID] = latlong, timestamp
+        self.clients[clientID] = location[0], location[1], timestamp
+        print(self.clients)
         self.transport.write(data)
         
     def handle_whatsat(self, message_list):
@@ -66,8 +68,10 @@ class EchoServerClientProtocol(asyncio.Protocol):
         otherClientID = message_list[1]
         radius = message_list[2]
         upperBound = message_list[3]
+        clientInfo = self.clients[otherClientID]
+        print(clientInfo)
         future = asyncio.Future()
-        asyncio.ensure_future(self.query_google(future, radius, upperBound))
+        asyncio.ensure_future(self.query_google(future, clientInfo, radius, upperBound))
         
     def connection_made(self, transport):
         self.transport = transport
