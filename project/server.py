@@ -66,12 +66,17 @@ class EchoServerClientProtocol(asyncio.Protocol):
         print('whatsat')
         print(message_list)
         otherClientID = message_list[1]
-        radius = message_list[2]
-        upperBound = message_list[3]
-        clientInfo = self.clients[otherClientID]
-        print(clientInfo)
-        future = asyncio.Future()
-        asyncio.ensure_future(self.query_google(future, clientInfo, radius, upperBound))
+        if otherClientID in self.clients:
+            radius = message_list[2]
+            upperBound = message_list[3]
+            clientInfo = self.clients[otherClientID]
+            timeDiff = time.time() - float(clientInfo[2])
+            firstMessage = "AT " + self.idName + " " + str(timeDiff) + " " + clientInfo[0] + clientInfo[1] + " " + clientInfo[2]
+            self.transport.write(firstMessage.encode())
+            future = asyncio.Future()
+            asyncio.ensure_future(self.query_google(future, clientInfo, radius, upperBound))
+        else:
+            self.transport.write("This client doesn't exist".encode())
         
     def connection_made(self, transport):
         self.transport = transport
