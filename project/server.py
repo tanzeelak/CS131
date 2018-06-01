@@ -21,6 +21,23 @@ class EchoServerClientProtocol(asyncio.Protocol):
         self.frenz = talkto[idName]
         self.clients = dict()
 
+    def parse_location(self, latlong):
+        latitude = ''
+        longitude = ''
+        latFlag = False
+        for c in latlong:
+            if latFlag == False and (c == '+' or c == '-'):
+                latitude += c
+                latFlag = True
+            elif latFlag == True  and (c == '+' or c == '-'):
+                longitude += c
+                latFlag = False
+            elif latFlag == True:
+                latitude += c
+            elif latFlag == False:
+                longitude += c
+        return(latitude + ',' + longitude)
+        
     async def query_google(self, future, radius, upperBound):
         latitude = -33.8670522
         longitude = 151.1957362
@@ -37,6 +54,7 @@ class EchoServerClientProtocol(asyncio.Protocol):
         latlong = message_list[2] #check if number is between -180 to 180
         timestamp = message_list[3]
         timeDiff = time.time() - float(timestamp)
+        print(self.parse_location(latlong))
         res = 'AT ' + self.idName + ' ' + clientID + ' ' + latlong + ' ' + str(timeDiff)
         data = res.encode(encoding='UTF-8',errors='strict')
         self.clients[clientID] = latlong, timestamp
