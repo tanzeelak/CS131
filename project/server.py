@@ -3,6 +3,7 @@ import aiohttp
 import sys
 import logging
 import time
+import json
 
 API_KEY =  'AIzaSyAq2jI8Y0mp7475Fe_0Bu3Q2nxW5gkQeB4'
 GOOGLE_URL = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?'
@@ -43,6 +44,9 @@ class EchoServerClientProtocol(asyncio.Protocol):
         async with aiohttp.ClientSession() as session:
             async with session.get(GOOGLE_URL, params = parameters) as resp:
                 jsonResp = (await resp.text())
+                jsonObj = json.loads(jsonResp)
+                jsonObj['results'] = jsonObj['results'][:int(upperBound)]
+                jsonResp = json.dumps(jsonObj, indent=3)
                 jsonResp += "\n\n"
                 self.transport.write(jsonResp.encode())
 
