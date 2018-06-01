@@ -38,29 +38,28 @@ class EchoServerClientProtocol(asyncio.Protocol):
                 longitude += c
         return(latitude,longitude)
         
-    async def query_google(self, future, clientInfo, radius, upperBound):
-        latitude = float(clientInfo[0])
-        longitude = float(clientInfo[1])
-        print(latitude)
-        print(longitude)
-        parameters = {'key' : API_KEY, 'location' : str(latitude) + ',' + str(longitude), 'radius' : str(radius)}
+    async def query_google(self, future, latitude, longitude, radius, upperBound):
+        parameters = {'key' : API_KEY, 'location' : str(latitude) + ',' + str(longitude), 'radius' : str(radius), 'num': upperBound}
         async with aiohttp.ClientSession() as session:
             async with session.get(GOOGLE_URL, params = parameters) as resp:
                 jsonResp = (await resp.text())
+                jsonResp += "\n\n"
                 self.transport.write(jsonResp.encode())
 
     def handle_iamat(self, message_list):
         print(message_list)
         clientID = message_list[1]
-        latlong = message_list[2] #check if number is between -180 to 180
-        timestamp = message_list[3]
-        timeDiff = time.time() - float(timestamp)
-        location = self.parse_location(latlong)
-        res = 'AT ' + self.idName + ' ' + clientID + ' ' + location[0] + location[1] + ' ' + str(timeDiff)
-        data = res.encode(encoding='UTF-8',errors='strict')
-        self.clients[clientID] = location[0], location[1], timestamp
-        print(self.clients)
-        self.transport.write(data)
+        latlong = message_list[2]
+
+        [latitude,longitude] = self.parse_location(latlong)
+        if (float(latitude) > -180 and float(latitude) < 180) and (float(longitude) > -180 and float(longitude) < 180):
+            timestamp = message_list[3]
+            timeDiff = time.time() - float(timestamp)
+            res = 'AT ' + self.idName + ' ' + clientID + ' ' + latitude + longitude + ' ' + str(timeDiff)
+            data = res.encode(encoding='UTF-8',errors='strict')
+            self.clients[clientID] = {'latitude': latitude, 'longitude': longitude, 'timestamp': timestamp}
+            print(self.clients)
+            self.transport.write(data)
         
     def handle_whatsat(self, message_list):
         print('whatsat')
@@ -70,11 +69,12 @@ class EchoServerClientProtocol(asyncio.Protocol):
             radius = message_list[2]
             upperBound = message_list[3]
             clientInfo = self.clients[otherClientID]
-            timeDiff = time.time() - float(clientInfo[2])
-            firstMessage = "AT " + self.idName + " " + str(timeDiff) + " " + clientInfo[0] + clientInfo[1] + " " + clientInfo[2]
+            timeDiff = time.time() - float(clientInfo['timestamp'])
+            latitude, longitude = clientInfo['latitude'], clientInfo['longitude']
+            firstMessage = "AT " + self.idName + " " + str(timeDiff) + " " + latitude + longitude + " " + clientInfo['timestamp']
             self.transport.write(firstMessage.encode())
             future = asyncio.Future()
-            asyncio.ensure_future(self.query_google(future, clientInfo, radius, upperBound))
+            asyncio.ensure_future(self.query_google(future, float(latitude), float(longitude), radius, upperBound))
         else:
             self.transport.write("This client doesn't exist".encode())
         
@@ -87,7 +87,7 @@ class EchoServerClientProtocol(asyncio.Protocol):
         #check length of message
         message = data.decode()
         message_list = message.split()
-        if len(message_list) is not 0:
+        if len(message_list) == 4:
             command = message_list[0]
             if command == 'IAMAT':
                 self.handle_iamat(message_list)
