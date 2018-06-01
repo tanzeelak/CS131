@@ -14,6 +14,13 @@ talkto = {
     'Wilkes': ['Goloman', 'Hands', 'Holiday'],
     'Welsh': ['Holiday']
 }
+server_to_port = {
+    'Goloman': 12285,
+    'Hands': 12286,
+    'Holiday': 12287,
+    'Wilkes': 12288,
+    'Welsh': 12289
+}
         
 class EchoServerClientProtocol(asyncio.Protocol):
     def __init__(self, idName, portNum):
@@ -21,6 +28,13 @@ class EchoServerClientProtocol(asyncio.Protocol):
         self.portNum = portNum
         self.frenz = talkto[idName]
         self.clients = dict()
+
+    async def open_server(self, message):
+        asyncio.open_connection(TCP_IP, SERVER_PORTS[server],loop=loop)
+
+    def bad_input(self, message):
+        message = "? " + message
+        self.transport.write(message.encode())
 
     def parse_location(self, latlong):
         latitude = ''
@@ -67,7 +81,6 @@ class EchoServerClientProtocol(asyncio.Protocol):
         else:
             message  = (' ').join(message_list)
             self.bad_input(message)
-            
         
     def handle_whatsat(self, message_list):
         print('whatsat')
@@ -87,10 +100,6 @@ class EchoServerClientProtocol(asyncio.Protocol):
             message = (' ').join(message_list)
             self.bad_input(message)
 
-    def bad_input(self, message):
-        print('hohoho')
-        #self.transport.write(message)
-            
     def connection_made(self, transport):
         self.transport = transport
         self.peername = transport.get_extra_info('peername')
@@ -110,7 +119,6 @@ class EchoServerClientProtocol(asyncio.Protocol):
                     self.handle_whatsat(message_list)
                     break
                 else:
-                    print('garbage')
                     self.bad_input(message)
                     break
             else:
@@ -122,16 +130,8 @@ class EchoServerClientProtocol(asyncio.Protocol):
         self.transport.close()
 
 def match_serverID_port(serverID):
-    if serverID == 'Goloman':
-        return 12285
-    elif serverID == 'Hands':
-        return 12286
-    elif serverID == 'Holiday':
-        return 12287
-    elif serverID == 'Wilkes':
-        return 12288
-    elif serverID == 'Welsh':
-        return 12289
+    if serverID in server_to_port:
+        return server_to_port[serverID]
     else:
         print('u r not real')
         return sys.exit(1)
