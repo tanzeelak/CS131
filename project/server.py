@@ -40,7 +40,7 @@ class EchoServerClientProtocol(asyncio.Protocol):
         return(latitude,longitude)
         
     async def query_google(self, future, latitude, longitude, radius, upperBound):
-        parameters = {'key' : API_KEY, 'location' : str(latitude) + ',' + str(longitude), 'radius' : str(radius), 'num': upperBound}
+        parameters = {'key' : API_KEY, 'location' : str(latitude) + ',' + str(longitude), 'radius' : str(radius)}
         async with aiohttp.ClientSession() as session:
             async with session.get(GOOGLE_URL, params = parameters) as resp:
                 jsonResp = (await resp.text())
@@ -64,6 +64,10 @@ class EchoServerClientProtocol(asyncio.Protocol):
             self.clients[clientID] = {'latitude': latitude, 'longitude': longitude, 'timestamp': timestamp}
             print(self.clients)
             self.transport.write(data)
+        else:
+            message  = (' ').join(message_list)
+            self.bad_input(message)
+            
         
     def handle_whatsat(self, message_list):
         print('whatsat')
@@ -80,8 +84,13 @@ class EchoServerClientProtocol(asyncio.Protocol):
             future = asyncio.Future()
             asyncio.ensure_future(self.query_google(future, float(latitude), float(longitude), radius, upperBound))
         else:
-            self.transport.write("This client doesn't exist".encode())
-        
+            message = (' ').join(message_list)
+            self.bad_input(message)
+
+    def bad_input(self, message):
+        print('hohoho')
+        #self.transport.write(message)
+            
     def connection_made(self, transport):
         self.transport = transport
         self.peername = transport.get_extra_info('peername')
@@ -91,14 +100,22 @@ class EchoServerClientProtocol(asyncio.Protocol):
         #check length of message
         message = data.decode()
         message_list = message.split()
-        if len(message_list) == 4:
-            command = message_list[0]
-            if command == 'IAMAT':
-                self.handle_iamat(message_list)
-            elif command == 'WHATSAT':
-                self.handle_whatsat(message_list)
+        while(True): 
+            if len(message_list) == 4:
+                command = message_list[0]
+                if command == 'IAMAT':
+                    self.handle_iamat(message_list)
+                    break
+                elif command == 'WHATSAT':
+                    self.handle_whatsat(message_list)
+                    break
+                else:
+                    print('garbage')
+                    self.bad_input(message)
+                    break
             else:
-                print('garbage')
+                self.bad_input(message)
+                break
 
     def connection_lost(self, exc):
         print('Lost connection of {}'.format(self.peername))
