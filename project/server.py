@@ -23,14 +23,20 @@ server_to_port = {
 }
         
 class EchoServerClientProtocol(asyncio.Protocol):
-    def __init__(self, idName, portNum):
+    def __init__(self, idName, portNum, loop):
         self.idName = idName
         self.portNum = portNum
+        self.loop = loop
         self.frenz = talkto[idName]
         self.clients = dict()
 
-    async def open_server(self, message):
-        asyncio.open_connection(TCP_IP, SERVER_PORTS[server],loop=loop)
+    async def flooding(self, future, message):
+        for friend in self.frenz:
+            print(friend)
+            print(server_to_port[friend])
+            reader, writer = await asyncio.open_connection('127.0.0.1', server_to_port[friend], loop = self.loop)
+            writer.write(message.encode())
+	    #writer.close()
 
     def bad_input(self, message):
         message = "? " + message
@@ -68,7 +74,6 @@ class EchoServerClientProtocol(asyncio.Protocol):
         print(message_list)
         clientID = message_list[1]
         latlong = message_list[2]
-
         [latitude,longitude] = self.parse_location(latlong)
         if (float(latitude) > -180 and float(latitude) < 180) and (float(longitude) > -180 and float(longitude) < 180):
             timestamp = message_list[3]
@@ -78,8 +83,11 @@ class EchoServerClientProtocol(asyncio.Protocol):
             self.clients[clientID] = {'latitude': latitude, 'longitude': longitude, 'timestamp': timestamp}
             print(self.clients)
             self.transport.write(data)
+            message = (' ').join(message_list)
+            future = asyncio.Future()
+            asyncio.ensure_future(self.flooding(future, message))
         else:
-            message  = (' ').join(message_list)
+            message = (' ').join(message_list)
             self.bad_input(message)
         
     def handle_whatsat(self, message_list):
@@ -145,7 +153,7 @@ def main(serverID):
     # 127.0.0.1 is intended for the 'localhost' loopback devices.
     # If you have multiple NIC(Network Interface Card)s, you may specify the specific IP address to be used (listen).
     # 0.0.0.0 is to use any available NIC device.
-    coro = loop.create_server(lambda: EchoServerClientProtocol(serverID, portNum), '0.0.0.0', portNum)
+    coro = loop.create_server(lambda: EchoServerClientProtocol(serverID, portNum, loop), '0.0.0.0', portNum)
     server = loop.run_until_complete(coro)
 
     # Serve requests until Ctrl+C is pressed
