@@ -83,8 +83,8 @@ class EchoServerClientProtocol(asyncio.Protocol):
             propMessage = 'AT ' + self.idName + ' ' + str(timeDiff) + ' ' + clientID + ' ' + latitude + longitude + ' ' + timestamp
             self.clients[clientID] = {'latitude': latitude, 'longitude': longitude, 'timestamp': timestamp}
             self.transport.write(propMessage.encode())
-            #future = asyncio.Future()
-            #asyncio.ensure_future(self.flooding(future, propMessage))
+            future = asyncio.Future()
+            asyncio.ensure_future(self.flooding(future, propMessage))
         
     def handle_whatsat(self, message_list):
         print('whatsat')
@@ -101,8 +101,30 @@ class EchoServerClientProtocol(asyncio.Protocol):
             future = asyncio.Future()
             asyncio.ensure_future(self.query_google(future, float(latitude), float(longitude), radius, upperBound))
         else:
-            message = (' ').join(message_list)
+            message = ' '.join(message_list)
             self.bad_input(message)
+
+    def handle_at(self, message_list):
+        print('at')
+        #'AT ' + self.idName + ' ' + str(timeDiff) + ' ' + clientID + ' ' + latitude + longitude + ' ' + timestamp
+        message = ' '.join(message_list)
+        clientID = message_list[1]
+        timeDiff = message_list[2]
+        clientID = message_list[3]
+        latlong = message_list[4]
+        [latitude,longitude] = self.parse_location(latlong)
+        timestamp = message_list[5]
+        print('wha wo')
+        if (clientID not in self.clients) or ((clientID in self.clients) and (float(self.clients[clientID]['timestamp']) < float(timestamp))):
+            print('whatdatf')
+            self.clients[clientID] = {'latitude': latitude, 'longitude': longitude, 'timestamp': timestamp}
+            print(clientID)
+            print(self.clients)
+            print(float(self.clients[clientID]['timestamp']))
+            print(float(timestamp))
+            self.transport.write(message.encode())
+            future = asyncio.Future()
+            asyncio.ensure_future(self.flooding(future, message))
 
     def connection_made(self, transport):
         self.transport = transport
@@ -113,25 +135,26 @@ class EchoServerClientProtocol(asyncio.Protocol):
         #check length of message
         message = data.decode()
         message_list = message.split()
-        while(True): 
-            if len(message_list) == 4:
-                command = message_list[0]
-                if command == 'IAMAT':
-                    self.handle_iamat(message_list)
-                    break
-                elif command == 'WHATSAT':
-                    self.handle_whatsat(message_list)
-                    break
-                else:
-                    self.bad_input(message)
-                    break
-            elif len(message_list) == 6:
-                command = message_list[0]
-                if command == 'AT':
-                    print('henlo from the other side')
+        #while(True): 
+        if len(message_list) == 4:
+            command = message_list[0]
+            if command == 'IAMAT':
+                self.handle_iamat(message_list)
+                #break
+            elif command == 'WHATSAT':
+                self.handle_whatsat(message_list)
+                #break
             else:
                 self.bad_input(message)
-                break
+                #break
+        elif len(message_list) == 6:
+            command = message_list[0]
+            if command == 'AT':
+                self.handle_at(message_list)
+                #break
+        else:
+            self.bad_input(message)
+            #break
 
     def connection_lost(self, exc):
         print('Lost connection of {}'.format(self.peername))
