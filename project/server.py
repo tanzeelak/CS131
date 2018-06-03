@@ -79,13 +79,13 @@ class EchoServerClientProtocol(asyncio.Protocol):
         latlong = message_list[2]
         [latitude,longitude] = self.parse_location(latlong)
         timestamp = message_list[3]
-        if not (clientID in clients) or (float(clients[clientID]['timestamp']) < float(timestamp)):
-            timeDiff = time.time() - float(timestamp)
-            propMessage = 'AT ' + self.idName + ' ' + str(timeDiff) + ' ' + clientID + ' ' + latitude + longitude + ' ' + timestamp
-            clients[clientID] = {'latitude': latitude, 'longitude': longitude, 'timestamp': timestamp}
-            self.transport.write(propMessage.encode())
-            future = asyncio.Future()
-            asyncio.ensure_future(self.flooding(future, propMessage))
+        #if (clientID not in clients) or ((clientID in clients) and (float(clients[clientID]['timestamp']) < float(timestamp))):
+        timeDiff = time.time() - float(timestamp)
+        propMessage = 'AT ' + self.idName + ' ' + str(timeDiff) + ' ' + clientID + ' ' + latitude + longitude + ' ' + timestamp
+        clients[clientID] = {'latitude': latitude, 'longitude': longitude, 'timestamp': timestamp, 'origServer': self.idName}
+        self.transport.write(propMessage.encode())
+        future = asyncio.Future()
+        asyncio.ensure_future(self.flooding(future, propMessage))
         
     def handle_whatsat(self, message_list):
         print('whatsat')
@@ -97,7 +97,7 @@ class EchoServerClientProtocol(asyncio.Protocol):
             clientInfo = clients[otherClientID]
             timeDiff = time.time() - float(clientInfo['timestamp'])
             latitude, longitude = clientInfo['latitude'], clientInfo['longitude']
-            firstMessage = 'AT ' + self.idName + ' ' + str(timeDiff) + ' ' + otherClientID + ' '  + latitude + longitude + ' ' + clientInfo['timestamp']
+            firstMessage = 'AT ' + clientInfo['origServer'] + ' ' + str(timeDiff) + ' ' + otherClientID + ' '  + latitude + longitude + ' ' + clientInfo['timestamp']
             self.transport.write(firstMessage.encode())
             future = asyncio.Future()
             asyncio.ensure_future(self.query_google(future, float(latitude), float(longitude), radius, upperBound))
@@ -106,24 +106,15 @@ class EchoServerClientProtocol(asyncio.Protocol):
             self.bad_input(message)
 
     def handle_at(self, message_list):
-        print('at')
-        #'AT ' + self.idName + ' ' + str(timeDiff) + ' ' + clientID + ' ' + latitude + longitude + ' ' + timestamp
         message = ' '.join(message_list)
-        clientID = message_list[1]
+        origServer = message_list[1]
         timeDiff = message_list[2]
         clientID = message_list[3]
         latlong = message_list[4]
         [latitude,longitude] = self.parse_location(latlong)
         timestamp = message_list[5]
-        print('wha wo')
         if (clientID not in clients) or ((clientID in clients) and (float(clients[clientID]['timestamp']) < float(timestamp))):
-            print('whatdatf')
-            clients[clientID] = {'latitude': latitude, 'longitude': longitude, 'timestamp': timestamp}
-            print(clientID)
-            print(clients)
-            print(float(clients[clientID]['timestamp']))
-            print(float(timestamp))
-            self.transport.write(message.encode())
+            clients[clientID] = {'latitude': latitude, 'longitude': longitude, 'timestamp': timestamp, 'origServer': origServer}
             future = asyncio.Future()
             asyncio.ensure_future(self.flooding(future, message))
 
