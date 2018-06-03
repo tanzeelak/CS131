@@ -41,6 +41,7 @@ class EchoServerClientProtocol(asyncio.Protocol):
 
     def bad_input(self, message):
         message = "? " + message
+        logging.info(message)
         self.transport.write(message.encode())
 
     def parse_location(self, latlong):
@@ -69,6 +70,7 @@ class EchoServerClientProtocol(asyncio.Protocol):
                 jsonObj['results'] = jsonObj['results'][:int(upperBound)]
                 jsonResp = json.dumps(jsonObj, indent=3)
                 jsonResp += "\n\n"
+                logging.info(jsonResp)
                 self.transport.write(jsonResp.encode())
 
     def handle_iamat(self, message_list):
@@ -79,13 +81,14 @@ class EchoServerClientProtocol(asyncio.Protocol):
         latlong = message_list[2]
         [latitude,longitude] = self.parse_location(latlong)
         timestamp = message_list[3]
-        #if (clientID not in clients) or ((clientID in clients) and (float(clients[clientID]['timestamp']) < float(timestamp))):
         timeDiff = time.time() - float(timestamp)
         propMessage = 'AT ' + self.idName + ' ' + str(timeDiff) + ' ' + clientID + ' ' + latitude + longitude + ' ' + timestamp
-        clients[clientID] = {'latitude': latitude, 'longitude': longitude, 'timestamp': timestamp, 'origServer': self.idName}
-        self.transport.write(propMessage.encode())
-        future = asyncio.Future()
-        asyncio.ensure_future(self.flooding(future, propMessage))
+        logging.info(propMessage)
+        self.transport.write(propMessage.encode())        
+        if (clientID not in clients) or ((clientID in clients) and (float(clients[clientID]['timestamp']) < float(timestamp))):
+            clients[clientID] = {'latitude': latitude, 'longitude': longitude, 'timestamp': timestamp, 'timeDiff': str(timeDiff), 'origServer': self.idName}
+            future = asyncio.Future()
+            asyncio.ensure_future(self.flooding(future, propMessage))
         
     def handle_whatsat(self, message_list):
         print('whatsat')
@@ -95,9 +98,9 @@ class EchoServerClientProtocol(asyncio.Protocol):
             radius = message_list[2]
             upperBound = message_list[3]
             clientInfo = clients[otherClientID]
-            timeDiff = time.time() - float(clientInfo['timestamp'])
             latitude, longitude = clientInfo['latitude'], clientInfo['longitude']
-            firstMessage = 'AT ' + clientInfo['origServer'] + ' ' + str(timeDiff) + ' ' + otherClientID + ' '  + latitude + longitude + ' ' + clientInfo['timestamp']
+            firstMessage = 'AT ' + clientInfo['origServer'] + ' ' + clientInfo['timeDiff'] + ' ' + otherClientID + ' '  + latitude + longitude + ' ' + clientInfo['timestamp']
+            logging.info(firstMessage)
             self.transport.write(firstMessage.encode())
             future = asyncio.Future()
             asyncio.ensure_future(self.query_google(future, float(latitude), float(longitude), radius, upperBound))
@@ -114,18 +117,22 @@ class EchoServerClientProtocol(asyncio.Protocol):
         [latitude,longitude] = self.parse_location(latlong)
         timestamp = message_list[5]
         if (clientID not in clients) or ((clientID in clients) and (float(clients[clientID]['timestamp']) < float(timestamp))):
-            clients[clientID] = {'latitude': latitude, 'longitude': longitude, 'timestamp': timestamp, 'origServer': origServer}
+            clients[clientID] = {'latitude': latitude, 'longitude': longitude, 'timestamp': timestamp, 'timeDiff': timeDiff, 'origServer': origServer}
             future = asyncio.Future()
             asyncio.ensure_future(self.flooding(future, message))
 
     def connection_made(self, transport):
+        #log new connection
         self.transport = transport
         self.peername = transport.get_extra_info('peername')
-        print('Connection from {}'.format(self.peername))
+        logInput = 'Connection from {}'.format(self.peername)
+        print(logInput)
+        logging.info(logInput)
         
     def data_received(self, data):
-        #check length of message
+        # input and output logged
         message = data.decode()
+        logging.info(message)
         message_list = message.split()
         #while(True): 
         if len(message_list) == 4:
@@ -149,7 +156,10 @@ class EchoServerClientProtocol(asyncio.Protocol):
             #break
 
     def connection_lost(self, exc):
-        print('Lost connection of {}'.format(self.peername))
+        #log lost connection
+        logInput = 'Lost connection of {}'.format(self.peername)
+        print(logInput)
+        logging.info(logInput)
         self.transport.close()
 
 def match_serverID_port(serverID):
@@ -160,6 +170,7 @@ def match_serverID_port(serverID):
         return sys.exit(1)
     
 def main(serverID):
+    logging.basicConfig(filename='logfile.log',level=logging.DEBUG)
     portNum = match_serverID_port(serverID)
     loop = asyncio.get_event_loop()
     # Each client connection will create a new protocol instance
@@ -185,7 +196,7 @@ def main(serverID):
 
 if __name__ == '__main__':
     if (len(sys.argv) != 2):
-        sys.stderr.write('hehe')
+        sys.stderr.write('Not enuf args plz')
         exit(1)
     serverID = sys.argv[1]
     main(serverID)
