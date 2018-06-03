@@ -80,9 +80,9 @@ class EchoServerClientProtocol(asyncio.Protocol):
         timestamp = message_list[3]
         if not (clientID in self.clients) or (float(self.clients[clientID]['timestamp']) < float(timestamp)):
             timeDiff = time.time() - float(timestamp)
-            propMessage = 'AT ' + self.idName + ' ' + clientID + ' ' + latitude + longitude + ' ' + str(timeDiff)
+            propMessage = 'AT ' + self.idName + ' ' + str(timeDiff) + ' ' + clientID + ' ' + latitude + longitude + ' ' + timestamp
             self.clients[clientID] = {'latitude': latitude, 'longitude': longitude, 'timestamp': timestamp}
-            self.transport.write(message.encode())
+            self.transport.write(propMessage.encode())
             #future = asyncio.Future()
             #asyncio.ensure_future(self.flooding(future, propMessage))
         
@@ -96,7 +96,7 @@ class EchoServerClientProtocol(asyncio.Protocol):
             clientInfo = self.clients[otherClientID]
             timeDiff = time.time() - float(clientInfo['timestamp'])
             latitude, longitude = clientInfo['latitude'], clientInfo['longitude']
-            firstMessage = 'AT ' + self.idName + ' ' + str(timeDiff) + ' ' + latitude + longitude + ' ' + clientInfo['timestamp']
+            firstMessage = 'AT ' + self.idName + ' ' + str(timeDiff) + ' ' + otherClientID + ' '  + latitude + longitude + ' ' + clientInfo['timestamp']
             self.transport.write(firstMessage.encode())
             future = asyncio.Future()
             asyncio.ensure_future(self.query_google(future, float(latitude), float(longitude), radius, upperBound))
@@ -125,10 +125,10 @@ class EchoServerClientProtocol(asyncio.Protocol):
                 else:
                     self.bad_input(message)
                     break
-            #elif len(message_list) == 5:
-            #    command = message_list[0]
-            #    if command == 'AT':
-            #        print('henlo from the other side')
+            elif len(message_list) == 6:
+                command = message_list[0]
+                if command == 'AT':
+                    print('henlo from the other side')
             else:
                 self.bad_input(message)
                 break
