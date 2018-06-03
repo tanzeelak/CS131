@@ -1,0 +1,55 @@
+DEBUG:asyncio:Using selector: EpollSelector
+DEBUG:asyncio:Using selector: EpollSelector
+DEBUG:asyncio:Using selector: EpollSelector
+DEBUG:asyncio:Using selector: EpollSelector
+DEBUG:asyncio:Using selector: EpollSelector
+INFO:root:Connection from ('127.0.0.1', 53768)
+DEBUG:asyncio:Using selector: EpollSelector
+DEBUG:asyncio:Using selector: EpollSelector
+DEBUG:asyncio:Using selector: EpollSelector
+DEBUG:asyncio:Using selector: EpollSelector
+DEBUG:asyncio:Using selector: EpollSelector
+INFO:root:Connection from ('127.0.0.1', 53772)
+INFO:root:IAMAT kiwi.cs.ucla.edu +34.068930-118.445127 1520023934.918963997
+
+INFO:root:AT Wilkes 8044414.48679781 kiwi.cs.ucla.edu +34.068930-118.445127 1520023934.918963997
+INFO:root:Connection from ('127.0.0.1', 58068)
+INFO:root:AT Wilkes 8044414.48679781 kiwi.cs.ucla.edu +34.068930-118.445127 1520023934.918963997
+INFO:root:Lost connection of ('127.0.0.1', 58068)
+INFO:root:Connection from ('127.0.0.1', 56278)
+INFO:root:AT Wilkes 8044414.48679781 kiwi.cs.ucla.edu +34.068930-118.445127 1520023934.918963997
+INFO:root:Connection from ('127.0.0.1', 56280)
+INFO:root:Lost connection of ('127.0.0.1', 56278)
+INFO:root:Connection from ('127.0.0.1', 37092)
+INFO:root:Connection from ('127.0.0.1', 37094)
+INFO:root:AT Wilkes 8044414.48679781 kiwi.cs.ucla.edu +34.068930-118.445127 1520023934.918963997
+INFO:root:AT Wilkes 8044414.48679781 kiwi.cs.ucla.edu +34.068930-118.445127 1520023934.918963997
+INFO:root:Connection from ('127.0.0.1', 53784)
+INFO:root:Lost connection of ('127.0.0.1', 56280)
+INFO:root:Connection from ('127.0.0.1', 58080)
+INFO:root:AT Wilkes 8044414.48679781 kiwi.cs.ucla.edu +34.068930-118.445127 1520023934.918963997
+INFO:root:AT Wilkes 8044414.48679781 kiwi.cs.ucla.edu +34.068930-118.445127 1520023934.918963997
+INFO:root:AT Wilkes 8044414.48679781 kiwi.cs.ucla.edu +34.068930-118.445127 1520023934.918963997
+INFO:root:Lost connection of ('127.0.0.1', 53784)
+INFO:root:Lost connection of ('127.0.0.1', 37092)
+INFO:root:Lost connection of ('127.0.0.1', 58080)
+INFO:root:Lost connection of ('127.0.0.1', 37094)
+INFO:root:Connection from ('127.0.0.1', 53788)
+INFO:root:Connection from ('127.0.0.1', 58084)
+INFO:root:AT Wilkes 8044414.48679781 kiwi.cs.ucla.edu +34.068930-118.445127 1520023934.918963997
+INFO:root:AT Wilkes 8044414.48679781 kiwi.cs.ucla.edu +34.068930-118.445127 1520023934.918963997
+INFO:root:Lost connection of ('127.0.0.1', 53788)
+INFO:root:Lost connection of ('127.0.0.1', 58084)
+INFO:root:Connection from ('127.0.0.1', 58790)
+INFO:root:AT Wilkes 8044414.48679781 kiwi.cs.ucla.edu +34.068930-118.445127 1520023934.918963997
+INFO:root:Connection from ('127.0.0.1', 53794)
+INFO:root:AT Wilkes 8044414.48679781 kiwi.cs.ucla.edu +34.068930-118.445127 1520023934.918963997
+INFO:root:Lost connection of ('127.0.0.1', 58790)
+INFO:root:Lost connection of ('127.0.0.1', 53794)
+INFO:root:Connection from ('127.0.0.1', 37108)
+INFO:root:AT Wilkes 8044414.48679781 kiwi.cs.ucla.edu +34.068930-118.445127 1520023934.918963997
+INFO:root:Lost connection of ('127.0.0.1', 37108)
+INFO:root:
+
+INFO:root:? 
+
