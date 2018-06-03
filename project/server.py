@@ -21,6 +21,8 @@ server_to_port = {
     'Wilkes': 12288,
     'Welsh': 12289
 }
+
+clients = dict()
         
 class EchoServerClientProtocol(asyncio.Protocol):
     def __init__(self, idName, portNum, loop):
@@ -28,7 +30,6 @@ class EchoServerClientProtocol(asyncio.Protocol):
         self.portNum = portNum
         self.loop = loop
         self.frenz = talkto[idName]
-        self.clients = dict()
 
     async def flooding(self, future, message):
         for friend in self.frenz:
@@ -78,10 +79,10 @@ class EchoServerClientProtocol(asyncio.Protocol):
         latlong = message_list[2]
         [latitude,longitude] = self.parse_location(latlong)
         timestamp = message_list[3]
-        if not (clientID in self.clients) or (float(self.clients[clientID]['timestamp']) < float(timestamp)):
+        if not (clientID in clients) or (float(clients[clientID]['timestamp']) < float(timestamp)):
             timeDiff = time.time() - float(timestamp)
             propMessage = 'AT ' + self.idName + ' ' + str(timeDiff) + ' ' + clientID + ' ' + latitude + longitude + ' ' + timestamp
-            self.clients[clientID] = {'latitude': latitude, 'longitude': longitude, 'timestamp': timestamp}
+            clients[clientID] = {'latitude': latitude, 'longitude': longitude, 'timestamp': timestamp}
             self.transport.write(propMessage.encode())
             future = asyncio.Future()
             asyncio.ensure_future(self.flooding(future, propMessage))
@@ -90,10 +91,10 @@ class EchoServerClientProtocol(asyncio.Protocol):
         print('whatsat')
         print(message_list)
         otherClientID = message_list[1]
-        if otherClientID in self.clients:
+        if otherClientID in clients:
             radius = message_list[2]
             upperBound = message_list[3]
-            clientInfo = self.clients[otherClientID]
+            clientInfo = clients[otherClientID]
             timeDiff = time.time() - float(clientInfo['timestamp'])
             latitude, longitude = clientInfo['latitude'], clientInfo['longitude']
             firstMessage = 'AT ' + self.idName + ' ' + str(timeDiff) + ' ' + otherClientID + ' '  + latitude + longitude + ' ' + clientInfo['timestamp']
@@ -115,12 +116,12 @@ class EchoServerClientProtocol(asyncio.Protocol):
         [latitude,longitude] = self.parse_location(latlong)
         timestamp = message_list[5]
         print('wha wo')
-        if (clientID not in self.clients) or ((clientID in self.clients) and (float(self.clients[clientID]['timestamp']) < float(timestamp))):
+        if (clientID not in clients) or ((clientID in clients) and (float(clients[clientID]['timestamp']) < float(timestamp))):
             print('whatdatf')
-            self.clients[clientID] = {'latitude': latitude, 'longitude': longitude, 'timestamp': timestamp}
+            clients[clientID] = {'latitude': latitude, 'longitude': longitude, 'timestamp': timestamp}
             print(clientID)
-            print(self.clients)
-            print(float(self.clients[clientID]['timestamp']))
+            print(clients)
+            print(float(clients[clientID]['timestamp']))
             print(float(timestamp))
             self.transport.write(message.encode())
             future = asyncio.Future()
