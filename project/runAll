@@ -1,3 +1,4 @@
+rm logfile.log &
 python3 server.py Goloman &
 python3 server.py Hands &
 python3 server.py Holiday &

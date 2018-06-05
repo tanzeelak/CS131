@@ -1,0 +1,11 @@
+INFO:root:Connection from ('127.0.0.1', 38834)
+INFO:root:IAMAT kiwi.cs.ucla.edu +34.068930-118.445127 1520023934.918963997
+
+INFO:root:AT Goloman 8141513.490145922 kiwi.cs.ucla.edu +34.068930-118.445127 1520023934.918963997
+INFO:root:ConnectionRefusedError. Goloman cannot connect to Hands
+INFO:root:ConnectionRefusedError. Goloman cannot connect to Holiday
+INFO:root:ConnectionRefusedError. Goloman cannot connect to Wilkes
+INFO:root:
+
+INFO:root:? 
+

@@ -33,11 +33,14 @@ class EchoServerClientProtocol(asyncio.Protocol):
 
     async def flooding(self, future, message):
         for friend in self.frenz:
-            print("FLOOD from {} to {}: {}".format(self.idName, friend, message))
-            reader, writer = await asyncio.open_connection('127.0.0.1', server_to_port[friend])
-            writer.write(message.encode())
-            await writer.drain()
-            writer.close()
+            try: 
+                print("FLOOD from {} to {}: {}".format(self.idName, friend, message))
+                reader, writer = await asyncio.open_connection('127.0.0.1', server_to_port[friend])
+                writer.write(message.encode())
+                await writer.drain()
+                writer.close()
+            except ConnectionRefusedError:
+                logging.info('ConnectionRefusedError. {} cannot connect to {}'.format(self.idName, friend))
 
     def bad_input(self, message):
         message = "? " + message
@@ -132,6 +135,8 @@ class EchoServerClientProtocol(asyncio.Protocol):
     def data_received(self, data):
         # input and output logged
         message = data.decode()
+        for line in message.split('\n'):
+            print(line)
         logging.info(message)
         message_list = message.split()
         #while(True): 
@@ -170,7 +175,7 @@ def match_serverID_port(serverID):
         return sys.exit(1)
     
 def main(serverID):
-    logging.basicConfig(filename='logfile.log',level=logging.DEBUG)
+    logging.basicConfig(filename='logfile.log',level=logging.INFO)
     portNum = match_serverID_port(serverID)
     loop = asyncio.get_event_loop()
     # Each client connection will create a new protocol instance
