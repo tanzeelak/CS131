@@ -34,7 +34,7 @@ class EchoServerClientProtocol(asyncio.Protocol):
     async def flooding(self, future, message):
         for friend in self.frenz:
             try: 
-                print("FLOOD from {} to {}: {}".format(self.idName, friend, message))
+                #print("FLOOD from {} to {}: {}".format(self.idName, friend, message))
                 reader, writer = await asyncio.open_connection('127.0.0.1', server_to_port[friend])
                 writer.write(message.encode())
                 await writer.drain()
@@ -47,7 +47,7 @@ class EchoServerClientProtocol(asyncio.Protocol):
         logging.info(message)
         self.transport.write(message.encode())
 
-    def parse_location(self, latlong):
+    def parse_coord(self, latlong):
         latitude = ''
         longitude = ''
         latFlag = False
@@ -65,9 +65,9 @@ class EchoServerClientProtocol(asyncio.Protocol):
         return(latitude,longitude)
         
     async def query_google(self, future, latitude, longitude, radius, upperBound):
-        parameters = {'key' : API_KEY, 'location' : str(latitude) + ',' + str(longitude), 'radius' : str(radius)}
+        vals = {'key' : API_KEY, 'location' : str(latitude) + ',' + str(longitude), 'radius' : str(radius)}
         async with aiohttp.ClientSession() as session:
-            async with session.get(GOOGLE_URL, params = parameters) as resp:
+            async with session.get(GOOGLE_URL, params = vals) as resp:
                 jsonResp = (await resp.text())
                 jsonObj = json.loads(jsonResp)
                 jsonObj['results'] = jsonObj['results'][:int(upperBound)]
@@ -77,12 +77,12 @@ class EchoServerClientProtocol(asyncio.Protocol):
                 self.transport.write(jsonResp.encode())
 
     def handle_iamat(self, message_list):
-        print('iamat')
-        print(message_list)
+        #print('iamat')
+        #print(message_list)
         message = ' '.join(message_list)
         clientID = message_list[1]
         latlong = message_list[2]
-        [latitude,longitude] = self.parse_location(latlong)
+        [latitude,longitude] = self.parse_coord(latlong)
         timestamp = message_list[3]
         timeDiff = time.time() - float(timestamp)
         propMessage = 'AT ' + self.idName + ' ' + str(timeDiff) + ' ' + clientID + ' ' + latitude + longitude + ' ' + timestamp
@@ -94,8 +94,8 @@ class EchoServerClientProtocol(asyncio.Protocol):
             asyncio.ensure_future(self.flooding(future, propMessage))
         
     def handle_whatsat(self, message_list):
-        print('whatsat')
-        print(message_list)
+        #print('whatsat')
+        #print(message_list)
         otherClientID = message_list[1]
         if otherClientID in clients:
             radius = message_list[2]
@@ -117,7 +117,7 @@ class EchoServerClientProtocol(asyncio.Protocol):
         timeDiff = message_list[2]
         clientID = message_list[3]
         latlong = message_list[4]
-        [latitude,longitude] = self.parse_location(latlong)
+        [latitude,longitude] = self.parse_coord(latlong)
         timestamp = message_list[5]
         if (clientID not in clients) or ((clientID in clients) and (float(clients[clientID]['timestamp']) < float(timestamp))):
             clients[clientID] = {'latitude': latitude, 'longitude': longitude, 'timestamp': timestamp, 'timeDiff': timeDiff, 'origServer': origServer}
@@ -135,35 +135,27 @@ class EchoServerClientProtocol(asyncio.Protocol):
     def data_received(self, data):
         # input and output logged
         message = data.decode()
-        for line in message.split('\n'):
-            print(line)
         logging.info(message)
         message_list = message.split()
-        #while(True): 
         if len(message_list) == 4:
             command = message_list[0]
             if command == 'IAMAT':
                 self.handle_iamat(message_list)
-                #break
             elif command == 'WHATSAT':
                 self.handle_whatsat(message_list)
-                #break
             else:
                 self.bad_input(message)
-                #break
         elif len(message_list) == 6:
             command = message_list[0]
             if command == 'AT':
                 self.handle_at(message_list)
-                #break
         else:
             self.bad_input(message)
-            #break
 
     def connection_lost(self, exc):
         #log lost connection
         logInput = 'Lost connection of {}'.format(self.peername)
-        print(logInput)
+        #print(logInput)
         logging.info(logInput)
         self.transport.close()
 
@@ -171,7 +163,7 @@ def match_serverID_port(serverID):
     if serverID in server_to_port:
         return server_to_port[serverID]
     else:
-        print('u r not real')
+        print('Invalid server')
         return sys.exit(1)
     
 def main(serverID):
